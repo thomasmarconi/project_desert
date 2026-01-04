@@ -551,10 +551,6 @@ export type AsceticismUncheckedUpdateManyWithoutCreatorNestedInput = {
   deleteMany?: Prisma.AsceticismScalarWhereInput | Prisma.AsceticismScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type EnumTrackingTypeFieldUpdateOperationsInput = {
   set?: $Enums.TrackingType
 }

@@ -28,6 +28,22 @@ export interface LogEntry {
   notes?: string;
 }
 
+export interface ProgressStats {
+  totalDays: number;
+  completedDays: number;
+  completionRate: number;
+  currentStreak: number;
+  longestStreak: number;
+}
+
+export interface AsceticismProgress {
+  userAsceticismId: number;
+  asceticism: Asceticism;
+  startDate: string;
+  stats: ProgressStats;
+  logs: LogEntry[];
+}
+
 export async function getAsceticisms(category?: string): Promise<Asceticism[]> {
   const url = new URL(`${API_URL}/asceticisms/`);
   if (category) url.searchParams.append("category", category);
@@ -42,6 +58,21 @@ export async function getUserAsceticisms(
 ): Promise<UserAsceticism[]> {
   const res = await fetch(`${API_URL}/asceticisms/my?userId=${userId}`);
   if (!res.ok) throw new Error("Failed to fetch user asceticisms");
+  return res.json();
+}
+
+export async function getUserProgress(
+  userId: number,
+  startDate: string,
+  endDate: string
+): Promise<AsceticismProgress[]> {
+  const url = new URL(`${API_URL}/asceticisms/progress`);
+  url.searchParams.append("userId", userId.toString());
+  url.searchParams.append("startDate", startDate);
+  url.searchParams.append("endDate", endDate);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error("Failed to fetch progress data");
   return res.json();
 }
 

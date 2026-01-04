@@ -154,6 +154,104 @@ async def log_daily_progress(log: LogCreate):
         }
     )
 
+@router.get("/asceticisms/progress", tags=["asceticisms"])
+async def get_user_progress(
+    user_id: int = Query(..., alias="userId"),
+    start_date: str = Query(..., alias="startDate"),
+    end_date: str = Query(..., alias="endDate")
+):
+    """
+    Get progress statistics for all user asceticisms within a date range.
+    Returns completion rates, streaks, and detailed logs.
+    """
+    from datetime import datetime, timedelta
+    
+    # Get all active user asceticisms
+    user_asceticisms = await db.userasceticism.find_many(
+        where={
+            "userId": user_id,
+            "status": AsceticismStatus.ACTIVE
+        },
+        include={
+            "asceticism": True,
+            "logs": {
+                "where": {
+                    "date": {
+                        "gte": start_date,
+                        "lte": end_date
+                    }
+                },
+                "order_by": {
+                    "date": "asc"
+                }
+            }
+        }
+    )
+    
+    # Calculate statistics for each asceticism
+    progress_data = []
+    for ua in user_asceticisms:
+        logs = ua.logs or []
+        
+        # Calculate total days in range
+        start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        total_days = (end - start).days + 1
+        
+        # Calculate completion stats
+        completed_days = sum(1 for log in logs if log.completed)
+        completion_rate = (completed_days / total_days * 100) if total_days > 0 else 0
+        
+        # Calculate current streak
+        current_streak = 0
+        if logs:
+            sorted_logs = sorted(logs, key=lambda x: x.date, reverse=True)
+            for log in sorted_logs:
+                if log.completed:
+                    current_streak += 1
+                else:
+                    break
+        
+        # Calculate longest streak in period
+        longest_streak = 0
+        temp_streak = 0
+        for log in sorted(logs, key=lambda x: x.date):
+            if log.completed:
+                temp_streak += 1
+                longest_streak = max(longest_streak, temp_streak)
+            else:
+                temp_streak = 0
+        
+        progress_data.append({
+            "userAsceticismId": ua.id,
+            "asceticism": {
+                "id": ua.asceticism.id,
+                "title": ua.asceticism.title,
+                "category": ua.asceticism.category,
+                "icon": ua.asceticism.icon,
+                "type": ua.asceticism.type
+            },
+            "startDate": ua.startDate.isoformat(),
+            "stats": {
+                "totalDays": total_days,
+                "completedDays": completed_days,
+                "completionRate": round(completion_rate, 1),
+                "currentStreak": current_streak,
+                "longestStreak": longest_streak
+            },
+            "logs": [
+                {
+                    "date": log.date.isoformat(),
+                    "completed": log.completed,
+                    "value": log.value,
+                    "notes": log.notes
+                }
+                for log in logs
+            ]
+        })
+    
+    return progress_data
+
 @router.post("/debug/user")
 async def create_debug_user(email: str):
     return await db.user.create(data={"email": email, "name": "Debug User"})

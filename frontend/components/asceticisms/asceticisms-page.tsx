@@ -22,7 +22,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Check, Plus, Flame, Activity } from "lucide-react";
+import {
+  Check,
+  Plus,
+  Flame,
+  Activity,
+  Sparkles,
+  BarChart3,
+} from "lucide-react";
+import CreateAsceticismForm from "./create-asceticism-form";
+import ProgressDashboard from "./progress-dashboard";
 
 const TEST_USER_ID = 1;
 
@@ -100,9 +109,17 @@ export default function AsceticismsPage() {
       </div>
 
       <Tabs defaultValue="my-commitments" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+        <TabsList className="">
           <TabsTrigger value="my-commitments">My Commitments</TabsTrigger>
+          <TabsTrigger value="progress" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Progress
+          </TabsTrigger>
           <TabsTrigger value="browse">Browse Practices</TabsTrigger>
+          <TabsTrigger value="create" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Create Custom
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-commitments" className="mt-6 space-y-6">
@@ -137,7 +154,7 @@ export default function AsceticismsPage() {
                 <CardFooter>
                   <Button
                     onClick={() => handleLog(ua.id)}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white gap-2 shadow-sm"
+                    className="w-full gap-2 shadow-sm"
                   >
                     <Check size={16} /> Log Complete
                   </Button>
@@ -154,6 +171,10 @@ export default function AsceticismsPage() {
               </div>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="progress" className="mt-6">
+          <ProgressDashboard />
         </TabsContent>
 
         <TabsContent value="browse" className="mt-6">
@@ -191,6 +212,10 @@ export default function AsceticismsPage() {
               </div>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="create" className="mt-6">
+          <CreateAsceticismForm onSuccess={fetchData} />
         </TabsContent>
       </Tabs>
     </div>
