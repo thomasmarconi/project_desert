@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from prisma.models import Asceticism, UserAsceticism, AsceticismLog
@@ -22,6 +23,8 @@ class UserAsceticismLink(BaseModel):
     userId: int
     asceticismId: int
     targetValue: Optional[float] = None
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
     metadata: Optional[dict] = None
 
 class LogCreate(BaseModel):
@@ -72,18 +75,87 @@ async def create_asceticism(item: AsceticismCreate):
         
     return await db.asceticism.create(data=data)
 
+@router.put("/asceticisms/{asceticism_id}", tags=["asceticisms"], response_model=Asceticism)
+async def update_asceticism(asceticism_id: int, item: AsceticismCreate):
+    """
+    Update an existing asceticism template.
+    TODO: Add admin permission check.
+    """
+    # Check if asceticism exists
+    existing = await db.asceticism.find_unique(where={"id": asceticism_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Asceticism not found")
+    
+    # Prepare update data
+    data = {
+        "title": item.title,
+        "category": item.category,
+        "type": item.type,
+    }
+    
+    if item.description is not None:
+        data["description"] = item.description
+    if item.icon is not None:
+        data["icon"] = item.icon
+    if item.metadata is not None:
+        data["metadata"] = item.metadata
+        
+    return await db.asceticism.update(
+        where={"id": asceticism_id},
+        data=data
+    )
+
+@router.delete("/asceticisms/{asceticism_id}", tags=["asceticisms"])
+async def delete_asceticism(asceticism_id: int):
+    """
+    Delete an asceticism template.
+    TODO: Add admin permission check.
+    Note: This will fail if users are currently committed to this asceticism due to foreign key constraints.
+    """
+    # Check if asceticism exists
+    existing = await db.asceticism.find_unique(where={"id": asceticism_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Asceticism not found")
+    
+    # Check if any users are committed to this asceticism
+    user_count = await db.userasceticism.count(where={"asceticismId": asceticism_id})
+    if user_count > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot delete asceticism: {user_count} user(s) are currently committed to it"
+        )
+    
+    await db.asceticism.delete(where={"id": asceticism_id})
+    return {"message": "Asceticism deleted successfully"}
+
+
 @router.get("/asceticisms/my", tags=["asceticisms"], response_model=List[UserAsceticism])
 async def list_user_asceticisms(user_id: int = Query(..., alias="userId")):
     """
-    Get all active asceticisms for a specific user.
+    Get all active asceticisms for a specific user, including today's logs.
     """
+    from datetime import datetime, timezone
+    
+    # Get today's date at start of day (UTC)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
     return await db.userasceticism.find_many(
         where={
             "userId": user_id,
             "status": AsceticismStatus.ACTIVE
         },
         include={
-            "asceticism": True
+            "asceticism": True,
+            "logs": {
+                "where": {
+                    "date": {
+                        "gte": today_start.isoformat()
+                    }
+                },
+                "order_by": {
+                    "date": "desc"
+                }
+            }
         }
     )
 
@@ -110,6 +182,16 @@ async def join_asceticism(link: UserAsceticismLink):
     }
     if link.targetValue is not None:
         data["targetValue"] = link.targetValue
+    if link.startDate is not None:
+        try:
+            data["startDate"] = datetime.fromisoformat(link.startDate)
+        except ValueError:
+            pass
+    if link.endDate is not None:
+        try:
+            data["endDate"] = datetime.fromisoformat(link.endDate)
+        except ValueError:
+            pass
     if link.metadata is not None:
         data["metadata"] = link.metadata
         
@@ -153,6 +235,28 @@ async def log_daily_progress(log: LogCreate):
             "update": update_data
         }
     )
+
+@router.delete("/asceticisms/leave/{user_asceticism_id}", tags=["asceticisms"])
+async def leave_asceticism(user_asceticism_id: int):
+    """
+    Leave/remove an asceticism commitment by setting status to INACTIVE.
+    """
+    # Check if the user asceticism exists
+    user_asceticism = await db.userasceticism.find_unique(
+        where={"id": user_asceticism_id}
+    )
+    
+    if not user_asceticism:
+        raise HTTPException(status_code=404, detail="User asceticism not found")
+    
+    # Update status to INACTIVE instead of deleting
+    await db.userasceticism.update(
+        where={"id": user_asceticism_id},
+        data={"status": AsceticismStatus.INACTIVE}
+    )
+    
+    return {"message": "Successfully left asceticism"}
+
 
 @router.get("/asceticisms/progress", tags=["asceticisms"])
 async def get_user_progress(

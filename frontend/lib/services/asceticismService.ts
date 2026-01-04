@@ -18,10 +18,24 @@ export interface UserAsceticism {
   status: string;
   startDate: string;
   targetValue?: number;
+  logs?: Array<{
+    id: number;
+    date: string;
+    completed: boolean;
+    value?: number;
+    notes?: string;
+  }>;
 }
 
 export interface LogEntry {
   userAsceticismId: number;
+  date: string; // ISO
+  completed: boolean;
+  value?: number;
+  notes?: string;
+}
+
+export interface ProgressLog {
   date: string; // ISO
   completed: boolean;
   value?: number;
@@ -41,7 +55,7 @@ export interface AsceticismProgress {
   asceticism: Asceticism;
   startDate: string;
   stats: ProgressStats;
-  logs: LogEntry[];
+  logs: ProgressLog[];
 }
 
 export async function getAsceticisms(category?: string): Promise<Asceticism[]> {
@@ -91,12 +105,20 @@ export async function createAsceticism(
 export async function joinAsceticism(
   userId: number,
   asceticismId: number,
-  targetValue?: number
+  targetValue?: number,
+  startDate?: string,
+  endDate?: string
 ): Promise<UserAsceticism> {
   const res = await fetch(`${API_URL}/asceticisms/join`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, asceticismId, targetValue }),
+    body: JSON.stringify({
+      userId,
+      asceticismId,
+      targetValue,
+      startDate,
+      endDate,
+    }),
   });
   if (!res.ok) throw new Error("Failed to join asceticism");
   return res.json();
@@ -110,4 +132,34 @@ export async function logProgress(entry: LogEntry): Promise<any> {
   });
   if (!res.ok) throw new Error("Failed to log progress");
   return res.json();
+}
+
+export async function updateAsceticism(
+  id: number,
+  data: Partial<Asceticism> & { creatorId?: number }
+): Promise<Asceticism> {
+  const res = await fetch(`${API_URL}/asceticisms/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update asceticism");
+  return res.json();
+}
+
+export async function deleteAsceticism(id: number): Promise<void> {
+  const res = await fetch(`${API_URL}/asceticisms/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.detail || "Failed to delete asceticism");
+  }
+}
+
+export async function leaveAsceticism(userAsceticismId: number): Promise<void> {
+  const res = await fetch(`${API_URL}/asceticisms/leave/${userAsceticismId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to leave asceticism");
 }

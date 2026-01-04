@@ -6,6 +6,13 @@ import {
   AsceticismProgress,
 } from "@/lib/services/asceticismService";
 import {
+  format,
+  eachDayOfInterval,
+  differenceInDays,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -63,9 +70,10 @@ export default function ProgressDashboard() {
     try {
       const { startDate, endDate } = getDateRange(timePeriod);
       const data = await getUserProgress(TEST_USER_ID, startDate, endDate);
+      console.log("Progress data received:", data);
       setProgressData(data);
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching progress:", e);
       toast.error("Failed to load progress data");
     } finally {
       setLoading(false);
@@ -88,58 +96,55 @@ export default function ProgressDashboard() {
     }
 
     return {
-      startDate: start.toISOString(),
-      endDate: end.toISOString(),
+      startDate: startOfDay(start).toISOString(),
+      endDate: endOfDay(end).toISOString(),
     };
   }
 
   function renderHeatmap(logs: AsceticismProgress["logs"]) {
     const { startDate, endDate } = getDateRange(timePeriod);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const totalDays = Math.ceil(
-      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const start = startOfDay(new Date(startDate));
+    const end = startOfDay(new Date(endDate));
 
-    // Create a map of dates to completion status
-    const logMap = new Map(
-      logs.map((log) => [new Date(log.date).toDateString(), log.completed])
-    );
-
-    // Generate array of all days in range
-    const days = [];
-    for (let i = 0; i < totalDays; i++) {
-      const date = new Date(start);
-      date.setDate(start.getDate() + i);
-      const dateStr = date.toDateString();
-      const completed = logMap.get(dateStr) || false;
-      days.push({ date, completed });
-    }
-
-    // Only show heatmap if there are a reasonable number of days
-    if (totalDays > 90) {
+    // Safety check for huge ranges that might crash the browser
+    if (differenceInDays(end, start) > 366) {
       return (
-        <div className="text-sm text-muted-foreground">
-          Heatmap view available for periods up to 90 days
+        <div className="text-sm text-muted-foreground p-2 bg-muted/50 rounded-md">
+          Heatmap view is available for periods up to 1 year.
         </div>
       );
     }
 
+    const daysInterval = eachDayOfInterval({ start, end });
+
+    // Create a map of date strings to completion status
+    const logMap = new Map(
+      (logs || []).map((log) => {
+        // Ensure we parse the ISO string correctly to local date string for matching
+        const dateKey = format(new Date(log.date), "yyyy-MM-dd");
+        return [dateKey, log.completed];
+      })
+    );
+
     return (
       <div className="flex flex-wrap gap-1">
-        {days.map((day, idx) => (
-          <div
-            key={idx}
-            className={`w-3 h-3 rounded-sm transition-all ${
-              day.completed
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
-            }`}
-            title={`${day.date.toLocaleDateString()}: ${
-              day.completed ? "Completed" : "Not completed"
-            }`}
-          />
-        ))}
+        {daysInterval.map((day, idx) => {
+          const dateKey = format(day, "yyyy-MM-dd");
+          const completed = logMap.get(dateKey) || false;
+          return (
+            <div
+              key={idx}
+              className={`w-3.5 h-3.5 rounded-sm transition-all border border-transparent ${
+                completed
+                  ? "bg-green-500 hover:bg-green-600 border-green-600/20"
+                  : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200/50 dark:border-slate-700/50"
+              }`}
+              title={`${format(day, "MMM d, yyyy")}: ${
+                completed ? "Completed" : "Not completed"
+              }`}
+            />
+          );
+        })}
       </div>
     );
   }
@@ -226,7 +231,7 @@ export default function ProgressDashboard() {
               </CardTitle>
               <CardDescription>
                 {progress.stats.completedDays} of {progress.stats.totalDays}{" "}
-                days completed
+                days completed in period
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

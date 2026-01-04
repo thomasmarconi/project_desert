@@ -6,6 +6,7 @@ import {
   getUserAsceticisms,
   joinAsceticism,
   logProgress,
+  leaveAsceticism,
   Asceticism,
   UserAsceticism,
 } from "@/lib/services/asceticismService";
@@ -29,11 +30,14 @@ import {
   Activity,
   Sparkles,
   BarChart3,
+  X,
 } from "lucide-react";
 import CreateAsceticismForm from "./create-asceticism-form";
 import ProgressDashboard from "./progress-dashboard";
 
 const TEST_USER_ID = 1;
+// TODO: Replace with actual user role check from authentication
+const IS_ADMIN = true; // Set to true for testing admin features
 
 export default function AsceticismsPage() {
   const [templates, setTemplates] = useState<Asceticism[]>([]);
@@ -80,9 +84,40 @@ export default function AsceticismsPage() {
         completed: true,
       });
       toast.success("Progress logged for today!");
+      // Refresh data to update the UI
+      fetchData();
     } catch (e) {
       toast.error("Failed to log progress.");
     }
+  }
+
+  async function handleLeave(userAsceticismId: number, title: string) {
+    try {
+      await leaveAsceticism(userAsceticismId);
+      toast.success(`Removed "${title}" from your commitments`);
+      fetchData();
+    } catch (e) {
+      toast.error("Failed to remove commitment.");
+    }
+  }
+
+  // Helper function to check if a BOOLEAN type asceticism has been logged today
+  function hasLoggedToday(ua: UserAsceticism): boolean {
+    // Only check for BOOLEAN type (daily completion)
+    if (ua.asceticism?.type !== "BOOLEAN") {
+      return false;
+    }
+
+    // Get today's date in YYYY-MM-DD format (local timezone)
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    // Check if there's a log entry for today
+    const logs = ua.logs || [];
+    return logs.some((log) => {
+      const logDate = new Date(log.date).toISOString().split("T")[0];
+      return logDate === todayStr && log.completed;
+    });
   }
 
   if (loading)
@@ -118,7 +153,7 @@ export default function AsceticismsPage() {
           <TabsTrigger value="browse">Browse Practices</TabsTrigger>
           <TabsTrigger value="create" className="gap-2">
             <Sparkles className="h-4 w-4" />
-            Create Custom
+            Create
           </TabsTrigger>
         </TabsList>
 
@@ -129,7 +164,7 @@ export default function AsceticismsPage() {
                 key={ua.id}
                 className="relative overflow-hidden border-l-4 border-l-green-500 shadow-sm hover:shadow-md transition-all"
               >
-                <div className="absolute top-0 right-0 p-4 opacity-10">
+                <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                   <Activity size={64} />
                 </div>
                 <CardHeader>
@@ -140,6 +175,20 @@ export default function AsceticismsPage() {
                     >
                       {ua.asceticism?.category}
                     </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      onClick={() =>
+                        handleLeave(
+                          ua.id,
+                          ua.asceticism?.title || "this practice"
+                        )
+                      }
+                      title="Remove commitment"
+                    >
+                      <X size={16} />
+                    </Button>
                   </div>
                   <CardTitle>{ua.asceticism?.title}</CardTitle>
                   <CardDescription>
@@ -152,12 +201,22 @@ export default function AsceticismsPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button
-                    onClick={() => handleLog(ua.id)}
-                    className="w-full gap-2 shadow-sm"
-                  >
-                    <Check size={16} /> Log Complete
-                  </Button>
+                  {(() => {
+                    const loggedToday = hasLoggedToday(ua);
+                    const isDaily = ua.asceticism?.type === "BOOLEAN";
+
+                    return (
+                      <Button
+                        onClick={() => handleLog(ua.id)}
+                        className="w-full gap-2 shadow-sm"
+                        disabled={isDaily && loggedToday}
+                        variant={loggedToday ? "secondary" : "default"}
+                      >
+                        <Check size={16} />
+                        {loggedToday ? "Completed Today" : "Log Complete"}
+                      </Button>
+                    );
+                  })()}
                 </CardFooter>
               </Card>
             ))}
@@ -215,7 +274,7 @@ export default function AsceticismsPage() {
         </TabsContent>
 
         <TabsContent value="create" className="mt-6">
-          <CreateAsceticismForm onSuccess={fetchData} />
+          <CreateAsceticismForm onSuccess={fetchData} isAdmin={IS_ADMIN} />
         </TabsContent>
       </Tabs>
     </div>

@@ -20,9 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { createAsceticism } from "@/lib/services/asceticismService";
+import {
+  createAsceticism,
+  joinAsceticism,
+} from "@/lib/services/asceticismService";
 import {
   Sparkles,
   Droplet,
@@ -98,10 +102,12 @@ const TRACKING_TYPES = [
 
 interface CreateAsceticismFormProps {
   onSuccess?: () => void;
+  isAdmin?: boolean;
 }
 
 export default function CreateAsceticismForm({
   onSuccess,
+  isAdmin = false,
 }: CreateAsceticismFormProps) {
   const [formData, setFormData] = useState({
     title: "",
@@ -110,6 +116,9 @@ export default function CreateAsceticismForm({
     customCategory: "",
     type: "BOOLEAN" as "BOOLEAN" | "NUMERIC" | "TEXT",
     icon: "",
+    isTemplate: false,
+    startDate: "",
+    endDate: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,18 +155,37 @@ export default function CreateAsceticismForm({
       );
       const iconName = selectedCategoryData?.icon.name || "Sparkles";
 
-      await createAsceticism({
+      // Create the asceticism
+      const newAsceticism = await createAsceticism({
         title: formData.title,
         description: formData.description || undefined,
         category: finalCategory,
         type: formData.type,
         icon: iconName,
-        creatorId: TEST_USER_ID, // This makes it a custom user asceticism
+        creatorId: formData.isTemplate ? undefined : TEST_USER_ID,
       });
 
-      toast.success("Custom practice created successfully!", {
-        description: "You can now find it in the Browse Practices tab",
-      });
+      // Automatically join the user to the newly created asceticism ONLY if it's NOT a template
+      if (!formData.isTemplate) {
+        await joinAsceticism(
+          TEST_USER_ID,
+          newAsceticism.id,
+          undefined,
+          formData.startDate || undefined,
+          formData.endDate || undefined
+        );
+        toast.success(
+          "Custom practice created and added to your commitments!",
+          {
+            description: "You can start logging your progress right away",
+          }
+        );
+      } else {
+        toast.success("Practice template created successfully!", {
+          description:
+            "It is now available for all users in the Browse section",
+        });
+      }
 
       // Reset form
       setFormData({
@@ -167,6 +195,9 @@ export default function CreateAsceticismForm({
         customCategory: "",
         type: "BOOLEAN",
         icon: "",
+        isTemplate: false,
+        startDate: "",
+        endDate: "",
       });
 
       onSuccess?.();
@@ -193,10 +224,15 @@ export default function CreateAsceticismForm({
             <Sparkles className="h-6 w-6 text-white" />
           </div>
           <div>
-            <CardTitle className="text-2xl">Create Custom Practice</CardTitle>
+            <CardTitle className="text-2xl">
+              {formData.isTemplate
+                ? "Create Practice Template"
+                : "Create Custom Practice"}
+            </CardTitle>
             <CardDescription className="text-base">
-              Design your own ascetic practice tailored to your spiritual
-              journey
+              {formData.isTemplate
+                ? "Design a global practice for all users to follow"
+                : "Design your own ascetic practice tailored to your spiritual journey"}
             </CardDescription>
           </div>
         </div>
@@ -204,6 +240,31 @@ export default function CreateAsceticismForm({
 
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6 pt-6">
+          {/* Admin Template Toggle */}
+          {isAdmin && (
+            <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-100 dark:border-purple-800 animate-in fade-in duration-300">
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="template-mode"
+                  className="text-base font-semibold text-purple-900 dark:text-purple-100 italic"
+                >
+                  Global Template Mode
+                </Label>
+                <p className="text-sm text-purple-700 dark:text-purple-300">
+                  Make this practice available to all users in the Browse
+                  section
+                </p>
+              </div>
+              <Switch
+                id="template-mode"
+                checked={formData.isTemplate}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isTemplate: checked })
+                }
+              />
+            </div>
+          )}
+
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title" className="text-base font-semibold">
@@ -248,42 +309,27 @@ export default function CreateAsceticismForm({
             <Label htmlFor="category" className="text-base font-semibold">
               Category <span className="text-destructive">*</span>
             </Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {CATEGORIES.map((cat) => {
-                const Icon = cat.icon;
-                const isSelected = formData.category === cat.value;
-                return (
-                  <button
-                    key={cat.value}
-                    type="button"
-                    onClick={() =>
-                      setFormData({ ...formData, category: cat.value })
-                    }
-                    className={`
-                      flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all
-                      ${
-                        isSelected
-                          ? "border-primary bg-primary/5 shadow-md scale-105"
-                          : "border-border hover:border-primary/50 hover:bg-accent"
-                      }
-                    `}
-                  >
-                    <Icon
-                      className={`h-6 w-6 ${
-                        isSelected ? "text-primary" : cat.color
-                      }`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${
-                        isSelected ? "text-primary" : ""
-                      }`}
-                    >
-                      {cat.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+
+            <Select
+              value={formData.category}
+              onValueChange={(value) =>
+                setFormData({ ...formData, category: value })
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    <div className="flex items-center gap-2">
+                      <cat.icon className={`h-4 w-4 ${cat.color}`} />
+                      <span>{cat.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* Custom Category Input */}
             {formData.category === "custom" && (
@@ -309,7 +355,7 @@ export default function CreateAsceticismForm({
             <Label className="text-base font-semibold">
               Tracking Type <span className="text-destructive">*</span>
             </Label>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {TRACKING_TYPES.map((type) => {
                 const isSelected = formData.type === type.value;
                 return (
@@ -320,7 +366,7 @@ export default function CreateAsceticismForm({
                       setFormData({ ...formData, type: type.value as any })
                     }
                     className={`
-                      w-full text-left p-4 rounded-lg border-2 transition-all
+                      text-left p-4 rounded-lg border-2 transition-all h-full
                       ${
                         isSelected
                           ? "border-primary bg-primary/5 shadow-sm"
@@ -328,32 +374,70 @@ export default function CreateAsceticismForm({
                       }
                     `}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`font-semibold ${
-                              isSelected ? "text-primary" : ""
-                            }`}
-                          >
-                            {type.label}
-                          </span>
-                          {isSelected && (
-                            <Badge variant="default" className="text-xs">
-                              Selected
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {type.description}
-                        </p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`font-semibold text-sm ${
+                            isSelected ? "text-primary" : ""
+                          }`}
+                        >
+                          {type.label}
+                        </span>
+                        {isSelected && (
+                          <Badge variant="default" className="text-xs">
+                            Selected
+                          </Badge>
+                        )}
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {type.description}
+                      </p>
                     </div>
                   </button>
                 );
               })}
             </div>
           </div>
+
+          {/* Duration / Dates (Only for non-templates) */}
+          {!formData.isTemplate && (
+            <div className="space-y-3 animate-in fade-in duration-300">
+              <Label className="text-base font-semibold">
+                Duration (Optional)
+              </Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate" className="text-sm font-medium">
+                    Start Date
+                  </Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startDate: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endDate" className="text-sm font-medium">
+                    End Date
+                  </Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endDate: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Set a specific timeframe for this practice.
+              </p>
+            </div>
+          )}
 
           {/* Preview Card */}
           {formData.title && (
@@ -388,6 +472,18 @@ export default function CreateAsceticismForm({
                       {formData.description}
                     </CardDescription>
                   )}
+                  {(formData.startDate || formData.endDate) && (
+                    <div className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+                      <span className="font-medium">Duration:</span>
+                      {formData.startDate
+                        ? new Date(formData.startDate).toLocaleDateString()
+                        : "Now"}
+                      {" - "}
+                      {formData.endDate
+                        ? new Date(formData.endDate).toLocaleDateString()
+                        : "Ongoing"}
+                    </div>
+                  )}
                 </CardHeader>
               </Card>
             </div>
@@ -407,6 +503,9 @@ export default function CreateAsceticismForm({
                 customCategory: "",
                 type: "BOOLEAN",
                 icon: "",
+                isTemplate: false,
+                startDate: "",
+                endDate: "",
               });
             }}
             disabled={isSubmitting}
@@ -423,7 +522,7 @@ export default function CreateAsceticismForm({
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                Create Practice
+                Create {formData.isTemplate ? "Template" : "Practice"}
               </>
             )}
           </Button>
