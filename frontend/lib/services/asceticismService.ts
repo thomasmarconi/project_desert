@@ -17,6 +17,7 @@ export interface UserAsceticism {
   asceticism?: Asceticism;
   status: string;
   startDate: string;
+  endDate?: string;
   targetValue?: number;
   logs?: Array<{
     id: number;
@@ -162,4 +163,17 @@ export async function leaveAsceticism(userAsceticismId: number): Promise<void> {
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to leave asceticism");
+}
+
+export async function updateUserAsceticism(
+  userAsceticismId: number,
+  data: { startDate?: string; endDate?: string; targetValue?: number }
+): Promise<UserAsceticism> {
+  const res = await fetch(`${API_URL}/asceticisms/my/${userAsceticismId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update user asceticism");
+  return res.json();
 }
