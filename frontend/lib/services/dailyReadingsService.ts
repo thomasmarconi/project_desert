@@ -1,12 +1,23 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Types
+export interface ReadingText {
+  text: string;
+  source?: string;
+  heading?: string;
+}
+
 export interface MassReading {
-  Mass_G?: string; // Gospel
-  Mass_R1?: string; // First Reading
-  Mass_R2?: string; // Second Reading
-  Mass_PS?: string; // Responsorial Psalm
-  [key: string]: string | undefined;
+  Mass_G?: ReadingText; // Gospel
+  Mass_R1?: ReadingText; // First Reading
+  Mass_R2?: ReadingText; // Second Reading
+  Mass_Ps?: ReadingText; // Responsorial Psalm
+  Mass_GA?: ReadingText; // Gospel Acclamation
+  copyright?: ReadingText; // Copyright/Attribution
+  day?: string;
+  date?: string;
+  number?: number;
+  [key: string]: any;
 }
 
 export interface DailyReadingNote {

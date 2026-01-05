@@ -31,6 +31,22 @@ import {
 } from "@/lib/services/dailyReadingsService";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Helper function to decode HTML entities
+const decodeHtmlEntities = (text: string): string => {
+  if (typeof document !== "undefined") {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = text;
+    return textarea.value;
+  }
+  // Server-side fallback
+  return text
+    .replace(/&#x2010;/g, "–")
+    .replace(/&#x([0-9A-Fa-f]+);/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    )
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
+};
+
 export default function DailyReadingsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [readings, setReadings] = useState<MassReading | null>(null);
@@ -227,26 +243,36 @@ export default function DailyReadingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>First Reading</CardTitle>
+                {readings.Mass_R1.source && (
+                  <p className="text-sm text-muted-foreground">
+                    {decodeHtmlEntities(readings.Mass_R1.source)}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: readings.Mass_R1 }}
+                  dangerouslySetInnerHTML={{ __html: readings.Mass_R1.text }}
                 />
               </CardContent>
             </Card>
           )}
 
           {/* Responsorial Psalm */}
-          {readings.Mass_PS && (
+          {readings.Mass_Ps && (
             <Card>
               <CardHeader>
                 <CardTitle>Responsorial Psalm</CardTitle>
+                {readings.Mass_Ps.source && (
+                  <p className="text-sm text-muted-foreground">
+                    {decodeHtmlEntities(readings.Mass_Ps.source)}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: readings.Mass_PS }}
+                  dangerouslySetInnerHTML={{ __html: readings.Mass_Ps.text }}
                 />
               </CardContent>
             </Card>
@@ -257,11 +283,16 @@ export default function DailyReadingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Second Reading</CardTitle>
+                {readings.Mass_R2.source && (
+                  <p className="text-sm text-muted-foreground">
+                    {decodeHtmlEntities(readings.Mass_R2.source)}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: readings.Mass_R2 }}
+                  dangerouslySetInnerHTML={{ __html: readings.Mass_R2.text }}
                 />
               </CardContent>
             </Card>
@@ -272,11 +303,21 @@ export default function DailyReadingsPage() {
             <Card className="border-2 border-primary">
               <CardHeader>
                 <CardTitle className="text-primary">Gospel</CardTitle>
+                {readings.Mass_G.source && (
+                  <p className="text-sm text-muted-foreground">
+                    {decodeHtmlEntities(readings.Mass_G.source)}
+                  </p>
+                )}
+                {readings.Mass_G.heading && (
+                  <p className="text-sm font-semibold text-primary/80 italic">
+                    {decodeHtmlEntities(readings.Mass_G.heading)}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: readings.Mass_G }}
+                  dangerouslySetInnerHTML={{ __html: readings.Mass_G.text }}
                 />
               </CardContent>
             </Card>
@@ -331,6 +372,18 @@ export default function DailyReadingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Copyright/Attribution */}
+      {readings && readings.copyright?.text && (
+        <Card className="bg-muted/30">
+          <CardContent>
+            <div
+              className="text-xs text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: readings.copyright.text }}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
