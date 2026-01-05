@@ -238,6 +238,7 @@ export type UserWhereInput = {
   userAsceticisms?: Prisma.UserAsceticismListRelationFilter
   userPrograms?: Prisma.UserProgramListRelationFilter
   groupMembers?: Prisma.GroupMemberListRelationFilter
+  dailyReadingNotes?: Prisma.DailyReadingNoteListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -254,6 +255,7 @@ export type UserOrderByWithRelationInput = {
   userAsceticisms?: Prisma.UserAsceticismOrderByRelationAggregateInput
   userPrograms?: Prisma.UserProgramOrderByRelationAggregateInput
   groupMembers?: Prisma.GroupMemberOrderByRelationAggregateInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -273,6 +275,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   userAsceticisms?: Prisma.UserAsceticismListRelationFilter
   userPrograms?: Prisma.UserProgramListRelationFilter
   groupMembers?: Prisma.GroupMemberListRelationFilter
+  dailyReadingNotes?: Prisma.DailyReadingNoteListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -316,6 +319,7 @@ export type UserCreateInput = {
   userAsceticisms?: Prisma.UserAsceticismCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -332,6 +336,7 @@ export type UserUncheckedCreateInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramUncheckedCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -347,6 +352,7 @@ export type UserUpdateInput = {
   userAsceticisms?: Prisma.UserAsceticismUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -363,6 +369,7 @@ export type UserUncheckedUpdateInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUncheckedUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -540,6 +547,20 @@ export type UserUpdateOneRequiredWithoutGroupMembersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutGroupMembersInput, Prisma.UserUpdateWithoutGroupMembersInput>, Prisma.UserUncheckedUpdateWithoutGroupMembersInput>
 }
 
+export type UserCreateNestedOneWithoutDailyReadingNotesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDailyReadingNotesInput, Prisma.UserUncheckedCreateWithoutDailyReadingNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDailyReadingNotesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutDailyReadingNotesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDailyReadingNotesInput, Prisma.UserUncheckedCreateWithoutDailyReadingNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDailyReadingNotesInput
+  upsert?: Prisma.UserUpsertWithoutDailyReadingNotesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDailyReadingNotesInput, Prisma.UserUpdateWithoutDailyReadingNotesInput>, Prisma.UserUncheckedUpdateWithoutDailyReadingNotesInput>
+}
+
 export type UserCreateWithoutAccountsInput = {
   name?: string | null
   email?: string | null
@@ -552,6 +573,7 @@ export type UserCreateWithoutAccountsInput = {
   userAsceticisms?: Prisma.UserAsceticismCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -567,6 +589,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramUncheckedCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -597,6 +620,7 @@ export type UserUpdateWithoutAccountsInput = {
   userAsceticisms?: Prisma.UserAsceticismUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -612,6 +636,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUncheckedUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -626,6 +651,7 @@ export type UserCreateWithoutSessionsInput = {
   userAsceticisms?: Prisma.UserAsceticismCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -641,6 +667,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramUncheckedCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -671,6 +698,7 @@ export type UserUpdateWithoutSessionsInput = {
   userAsceticisms?: Prisma.UserAsceticismUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -686,6 +714,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUncheckedUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCreatedAsceticismsInput = {
@@ -700,6 +729,7 @@ export type UserCreateWithoutCreatedAsceticismsInput = {
   userAsceticisms?: Prisma.UserAsceticismCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedAsceticismsInput = {
@@ -715,6 +745,7 @@ export type UserUncheckedCreateWithoutCreatedAsceticismsInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramUncheckedCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedAsceticismsInput = {
@@ -745,6 +776,7 @@ export type UserUpdateWithoutCreatedAsceticismsInput = {
   userAsceticisms?: Prisma.UserAsceticismUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedAsceticismsInput = {
@@ -760,6 +792,7 @@ export type UserUncheckedUpdateWithoutCreatedAsceticismsInput = {
   userAsceticisms?: Prisma.UserAsceticismUncheckedUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUncheckedUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUserAsceticismsInput = {
@@ -774,6 +807,7 @@ export type UserCreateWithoutUserAsceticismsInput = {
   createdAsceticisms?: Prisma.AsceticismCreateNestedManyWithoutCreatorInput
   userPrograms?: Prisma.UserProgramCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserAsceticismsInput = {
@@ -789,6 +823,7 @@ export type UserUncheckedCreateWithoutUserAsceticismsInput = {
   createdAsceticisms?: Prisma.AsceticismUncheckedCreateNestedManyWithoutCreatorInput
   userPrograms?: Prisma.UserProgramUncheckedCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserAsceticismsInput = {
@@ -819,6 +854,7 @@ export type UserUpdateWithoutUserAsceticismsInput = {
   createdAsceticisms?: Prisma.AsceticismUpdateManyWithoutCreatorNestedInput
   userPrograms?: Prisma.UserProgramUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserAsceticismsInput = {
@@ -834,6 +870,7 @@ export type UserUncheckedUpdateWithoutUserAsceticismsInput = {
   createdAsceticisms?: Prisma.AsceticismUncheckedUpdateManyWithoutCreatorNestedInput
   userPrograms?: Prisma.UserProgramUncheckedUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUserProgramsInput = {
@@ -848,6 +885,7 @@ export type UserCreateWithoutUserProgramsInput = {
   createdAsceticisms?: Prisma.AsceticismCreateNestedManyWithoutCreatorInput
   userAsceticisms?: Prisma.UserAsceticismCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserProgramsInput = {
@@ -863,6 +901,7 @@ export type UserUncheckedCreateWithoutUserProgramsInput = {
   createdAsceticisms?: Prisma.AsceticismUncheckedCreateNestedManyWithoutCreatorInput
   userAsceticisms?: Prisma.UserAsceticismUncheckedCreateNestedManyWithoutUserInput
   groupMembers?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserProgramsInput = {
@@ -893,6 +932,7 @@ export type UserUpdateWithoutUserProgramsInput = {
   createdAsceticisms?: Prisma.AsceticismUpdateManyWithoutCreatorNestedInput
   userAsceticisms?: Prisma.UserAsceticismUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserProgramsInput = {
@@ -908,6 +948,7 @@ export type UserUncheckedUpdateWithoutUserProgramsInput = {
   createdAsceticisms?: Prisma.AsceticismUncheckedUpdateManyWithoutCreatorNestedInput
   userAsceticisms?: Prisma.UserAsceticismUncheckedUpdateManyWithoutUserNestedInput
   groupMembers?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutGroupMembersInput = {
@@ -922,6 +963,7 @@ export type UserCreateWithoutGroupMembersInput = {
   createdAsceticisms?: Prisma.AsceticismCreateNestedManyWithoutCreatorInput
   userAsceticisms?: Prisma.UserAsceticismCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGroupMembersInput = {
@@ -937,6 +979,7 @@ export type UserUncheckedCreateWithoutGroupMembersInput = {
   createdAsceticisms?: Prisma.AsceticismUncheckedCreateNestedManyWithoutCreatorInput
   userAsceticisms?: Prisma.UserAsceticismUncheckedCreateNestedManyWithoutUserInput
   userPrograms?: Prisma.UserProgramUncheckedCreateNestedManyWithoutUserInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutGroupMembersInput = {
@@ -967,6 +1010,7 @@ export type UserUpdateWithoutGroupMembersInput = {
   createdAsceticisms?: Prisma.AsceticismUpdateManyWithoutCreatorNestedInput
   userAsceticisms?: Prisma.UserAsceticismUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGroupMembersInput = {
@@ -982,6 +1026,85 @@ export type UserUncheckedUpdateWithoutGroupMembersInput = {
   createdAsceticisms?: Prisma.AsceticismUncheckedUpdateManyWithoutCreatorNestedInput
   userAsceticisms?: Prisma.UserAsceticismUncheckedUpdateManyWithoutUserNestedInput
   userPrograms?: Prisma.UserProgramUncheckedUpdateManyWithoutUserNestedInput
+  dailyReadingNotes?: Prisma.DailyReadingNoteUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutDailyReadingNotesInput = {
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  isBanned?: boolean
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  createdAsceticisms?: Prisma.AsceticismCreateNestedManyWithoutCreatorInput
+  userAsceticisms?: Prisma.UserAsceticismCreateNestedManyWithoutUserInput
+  userPrograms?: Prisma.UserProgramCreateNestedManyWithoutUserInput
+  groupMembers?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutDailyReadingNotesInput = {
+  id?: number
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  isBanned?: boolean
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  createdAsceticisms?: Prisma.AsceticismUncheckedCreateNestedManyWithoutCreatorInput
+  userAsceticisms?: Prisma.UserAsceticismUncheckedCreateNestedManyWithoutUserInput
+  userPrograms?: Prisma.UserProgramUncheckedCreateNestedManyWithoutUserInput
+  groupMembers?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutDailyReadingNotesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutDailyReadingNotesInput, Prisma.UserUncheckedCreateWithoutDailyReadingNotesInput>
+}
+
+export type UserUpsertWithoutDailyReadingNotesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutDailyReadingNotesInput, Prisma.UserUncheckedUpdateWithoutDailyReadingNotesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutDailyReadingNotesInput, Prisma.UserUncheckedCreateWithoutDailyReadingNotesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutDailyReadingNotesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutDailyReadingNotesInput, Prisma.UserUncheckedUpdateWithoutDailyReadingNotesInput>
+}
+
+export type UserUpdateWithoutDailyReadingNotesInput = {
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isBanned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  createdAsceticisms?: Prisma.AsceticismUpdateManyWithoutCreatorNestedInput
+  userAsceticisms?: Prisma.UserAsceticismUpdateManyWithoutUserNestedInput
+  userPrograms?: Prisma.UserProgramUpdateManyWithoutUserNestedInput
+  groupMembers?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDailyReadingNotesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isBanned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  createdAsceticisms?: Prisma.AsceticismUncheckedUpdateManyWithoutCreatorNestedInput
+  userAsceticisms?: Prisma.UserAsceticismUncheckedUpdateManyWithoutUserNestedInput
+  userPrograms?: Prisma.UserProgramUncheckedUpdateManyWithoutUserNestedInput
+  groupMembers?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -996,6 +1119,7 @@ export type UserCountOutputType = {
   userAsceticisms: number
   userPrograms: number
   groupMembers: number
+  dailyReadingNotes: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1005,6 +1129,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   userAsceticisms?: boolean | UserCountOutputTypeCountUserAsceticismsArgs
   userPrograms?: boolean | UserCountOutputTypeCountUserProgramsArgs
   groupMembers?: boolean | UserCountOutputTypeCountGroupMembersArgs
+  dailyReadingNotes?: boolean | UserCountOutputTypeCountDailyReadingNotesArgs
 }
 
 /**
@@ -1059,6 +1184,13 @@ export type UserCountOutputTypeCountGroupMembersArgs<ExtArgs extends runtime.Typ
   where?: Prisma.GroupMemberWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountDailyReadingNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DailyReadingNoteWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1074,6 +1206,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   userAsceticisms?: boolean | Prisma.User$userAsceticismsArgs<ExtArgs>
   userPrograms?: boolean | Prisma.User$userProgramsArgs<ExtArgs>
   groupMembers?: boolean | Prisma.User$groupMembersArgs<ExtArgs>
+  dailyReadingNotes?: boolean | Prisma.User$dailyReadingNotesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1115,6 +1248,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   userAsceticisms?: boolean | Prisma.User$userAsceticismsArgs<ExtArgs>
   userPrograms?: boolean | Prisma.User$userProgramsArgs<ExtArgs>
   groupMembers?: boolean | Prisma.User$groupMembersArgs<ExtArgs>
+  dailyReadingNotes?: boolean | Prisma.User$dailyReadingNotesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1129,6 +1263,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     userAsceticisms: Prisma.$UserAsceticismPayload<ExtArgs>[]
     userPrograms: Prisma.$UserProgramPayload<ExtArgs>[]
     groupMembers: Prisma.$GroupMemberPayload<ExtArgs>[]
+    dailyReadingNotes: Prisma.$DailyReadingNotePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1538,6 +1673,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   userAsceticisms<T extends Prisma.User$userAsceticismsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userAsceticismsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserAsceticismPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   userPrograms<T extends Prisma.User$userProgramsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userProgramsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserProgramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   groupMembers<T extends Prisma.User$groupMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  dailyReadingNotes<T extends Prisma.User$dailyReadingNotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$dailyReadingNotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DailyReadingNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2103,6 +2239,30 @@ export type User$groupMembersArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.GroupMemberScalarFieldEnum | Prisma.GroupMemberScalarFieldEnum[]
+}
+
+/**
+ * User.dailyReadingNotes
+ */
+export type User$dailyReadingNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DailyReadingNote
+   */
+  select?: Prisma.DailyReadingNoteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DailyReadingNote
+   */
+  omit?: Prisma.DailyReadingNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DailyReadingNoteInclude<ExtArgs> | null
+  where?: Prisma.DailyReadingNoteWhereInput
+  orderBy?: Prisma.DailyReadingNoteOrderByWithRelationInput | Prisma.DailyReadingNoteOrderByWithRelationInput[]
+  cursor?: Prisma.DailyReadingNoteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DailyReadingNoteScalarFieldEnum | Prisma.DailyReadingNoteScalarFieldEnum[]
 }
 
 /**

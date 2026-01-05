@@ -397,7 +397,9 @@ export const ModelName = {
   ProgramItem: 'ProgramItem',
   UserProgram: 'UserProgram',
   Group: 'Group',
-  GroupMember: 'GroupMember'
+  GroupMember: 'GroupMember',
+  MassReading: 'MassReading',
+  DailyReadingNote: 'DailyReadingNote'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "verificationToken" | "account" | "session" | "user" | "asceticism" | "userAsceticism" | "asceticismLog" | "asceticismPackage" | "packageItem" | "program" | "programItem" | "userProgram" | "group" | "groupMember"
+    modelProps: "verificationToken" | "account" | "session" | "user" | "asceticism" | "userAsceticism" | "asceticismLog" | "asceticismPackage" | "packageItem" | "program" | "programItem" | "userProgram" | "group" | "groupMember" | "massReading" | "dailyReadingNote"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1453,6 +1455,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MassReading: {
+      payload: Prisma.$MassReadingPayload<ExtArgs>
+      fields: Prisma.MassReadingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MassReadingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MassReadingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>
+        }
+        findFirst: {
+          args: Prisma.MassReadingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MassReadingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>
+        }
+        findMany: {
+          args: Prisma.MassReadingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>[]
+        }
+        create: {
+          args: Prisma.MassReadingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>
+        }
+        createMany: {
+          args: Prisma.MassReadingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MassReadingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>[]
+        }
+        delete: {
+          args: Prisma.MassReadingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>
+        }
+        update: {
+          args: Prisma.MassReadingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>
+        }
+        deleteMany: {
+          args: Prisma.MassReadingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MassReadingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MassReadingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>[]
+        }
+        upsert: {
+          args: Prisma.MassReadingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MassReadingPayload>
+        }
+        aggregate: {
+          args: Prisma.MassReadingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMassReading>
+        }
+        groupBy: {
+          args: Prisma.MassReadingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MassReadingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MassReadingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MassReadingCountAggregateOutputType> | number
+        }
+      }
+    }
+    DailyReadingNote: {
+      payload: Prisma.$DailyReadingNotePayload<ExtArgs>
+      fields: Prisma.DailyReadingNoteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailyReadingNoteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailyReadingNoteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>
+        }
+        findFirst: {
+          args: Prisma.DailyReadingNoteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailyReadingNoteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>
+        }
+        findMany: {
+          args: Prisma.DailyReadingNoteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>[]
+        }
+        create: {
+          args: Prisma.DailyReadingNoteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>
+        }
+        createMany: {
+          args: Prisma.DailyReadingNoteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailyReadingNoteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>[]
+        }
+        delete: {
+          args: Prisma.DailyReadingNoteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>
+        }
+        update: {
+          args: Prisma.DailyReadingNoteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>
+        }
+        deleteMany: {
+          args: Prisma.DailyReadingNoteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailyReadingNoteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailyReadingNoteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>[]
+        }
+        upsert: {
+          args: Prisma.DailyReadingNoteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReadingNotePayload>
+        }
+        aggregate: {
+          args: Prisma.DailyReadingNoteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailyReadingNote>
+        }
+        groupBy: {
+          args: Prisma.DailyReadingNoteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyReadingNoteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailyReadingNoteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyReadingNoteCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1675,6 +1825,29 @@ export const GroupMemberScalarFieldEnum = {
 export type GroupMemberScalarFieldEnum = (typeof GroupMemberScalarFieldEnum)[keyof typeof GroupMemberScalarFieldEnum]
 
 
+export const MassReadingScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  data: 'data',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MassReadingScalarFieldEnum = (typeof MassReadingScalarFieldEnum)[keyof typeof MassReadingScalarFieldEnum]
+
+
+export const DailyReadingNoteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyReadingNoteScalarFieldEnum = (typeof DailyReadingNoteScalarFieldEnum)[keyof typeof DailyReadingNoteScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1689,6 +1862,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1977,6 +2157,8 @@ export type GlobalOmitConfig = {
   userProgram?: Prisma.UserProgramOmit
   group?: Prisma.GroupOmit
   groupMember?: Prisma.GroupMemberOmit
+  massReading?: Prisma.MassReadingOmit
+  dailyReadingNote?: Prisma.DailyReadingNoteOmit
 }
 
 /* Types for Logging */

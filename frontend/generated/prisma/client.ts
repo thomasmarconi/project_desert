@@ -109,3 +109,13 @@ export type Group = Prisma.GroupModel
  * 
  */
 export type GroupMember = Prisma.GroupMemberModel
+/**
+ * Model MassReading
+ * 
+ */
+export type MassReading = Prisma.MassReadingModel
+/**
+ * Model DailyReadingNote
+ * 
+ */
+export type DailyReadingNote = Prisma.DailyReadingNoteModel

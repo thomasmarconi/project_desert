@@ -64,7 +64,9 @@ export const ModelName = {
   ProgramItem: 'ProgramItem',
   UserProgram: 'UserProgram',
   Group: 'Group',
-  GroupMember: 'GroupMember'
+  GroupMember: 'GroupMember',
+  MassReading: 'MassReading',
+  DailyReadingNote: 'DailyReadingNote'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -266,6 +268,29 @@ export const GroupMemberScalarFieldEnum = {
 export type GroupMemberScalarFieldEnum = (typeof GroupMemberScalarFieldEnum)[keyof typeof GroupMemberScalarFieldEnum]
 
 
+export const MassReadingScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  data: 'data',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MassReadingScalarFieldEnum = (typeof MassReadingScalarFieldEnum)[keyof typeof MassReadingScalarFieldEnum]
+
+
+export const DailyReadingNoteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyReadingNoteScalarFieldEnum = (typeof DailyReadingNoteScalarFieldEnum)[keyof typeof DailyReadingNoteScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -280,6 +305,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: 'JsonNull'
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

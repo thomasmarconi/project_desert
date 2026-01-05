@@ -62,10 +62,11 @@ model User {
 
     accounts           Account[]
     sessions           Session[]
-    createdAsceticisms Asceticism[]     @relation("CreatedAsceticisms")
+    createdAsceticisms Asceticism[]       @relation("CreatedAsceticisms")
     userAsceticisms    UserAsceticism[]
     userPrograms       UserProgram[]
     groupMembers       GroupMember[]
+    dailyReadingNotes  DailyReadingNote[]
 
     @@map("users")
 }
@@ -285,4 +286,36 @@ enum GroupRole {
     MEMBER
     ADMIN
     MENTOR
+}
+
+/// --------------------
+/// Daily Readings
+/// --------------------
+
+// Cached Mass readings from Universalis API
+model MassReading {
+    id   Int      @id @default(autoincrement())
+    date DateTime @unique // The date of the readings (normalized to midnight UTC)
+    data Json // The full JSON response from Universalis API
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("mass_readings")
+}
+
+// User's notes and reflections on daily Mass readings
+model DailyReadingNote {
+    id     Int      @id @default(autoincrement())
+    userId Int
+    date   DateTime // The date of the readings (normalized to midnight UTC)
+    notes  String   @db.Text // User's reflection/thoughts on the readings
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, date])
+    @@map("daily_reading_notes")
 }
