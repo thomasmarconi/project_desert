@@ -49,7 +49,11 @@ async def get_mass_readings(date: str):
             return cached_reading.data
 
         # Not in cache, fetch from Universalis API
-        url = f"https://www.universalis.com/{date}/jsonpmass.js"
+        # Hard coding the country in for now. Apparently you can set the country/diocese in this url to get specific readings
+        # Here is a typical Universalis address without a calendar name: http://www.universalis.com/today.htm
+        # This will give you the General Calendar, or (if you have cookies enabled)
+        # As an example, here is the same address set to use the Maltese local calendar: http://www.universalis.com/Europe.Malta/today.htm
+        url = f"https://www.universalis.com/usa/{date}/jsonpmass.js"
 
         async with httpx.AsyncClient() as client:
             response = await client.get(url, timeout=10.0)

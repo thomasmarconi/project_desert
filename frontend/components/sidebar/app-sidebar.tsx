@@ -61,11 +61,11 @@ const items = [
   //   url: "/search",
   //   icon: Search,
   // },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-  },
+  // {
+  //   title: "Settings",
+  //   url: "/settings",
+  //   icon: Settings,
+  // },
 ];
 
 const adminItems = [
@@ -178,13 +178,13 @@ export default async function AppSidebar() {
                   align="end"
                   sideOffset={4}
                 >
-                  <DropdownMenuItem asChild>
+                  {/* <DropdownMenuItem asChild>
                     <a href="/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
                     </a>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator /> */}
                   <div className="p-1">
                     <SidebarSignOut />
                   </div>

@@ -98,7 +98,7 @@ type UniversalisResponse = {
 };
 
 async function getMassReadings(date: string): Promise<UniversalisResponse> {
-  const url = `https://www.universalis.com/${date}/jsonpmass.js`;
+  const url = `https://www.universalis.com/${country}/${date}/jsonpmass.js`;
 
   // Fetch raw JSONP response
   const res = await fetch(url);
