@@ -129,13 +129,13 @@ async def create_package(
         "creatorId": user.id,
         "isPublished": False,
     }
-    
+
     if package_data.description is not None:
         create_data["description"] = package_data.description
-    
+
     if package_data.metadata is not None:
         create_data["metadata"] = package_data.metadata
-    
+
     package = await db.asceticismpackage.create(data=create_data)
 
     # Create package items
