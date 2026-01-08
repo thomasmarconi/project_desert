@@ -69,9 +69,21 @@ export async function getAsceticisms(category?: string): Promise<Asceticism[]> {
 }
 
 export async function getUserAsceticisms(
-  userId: number
+  userId: number,
+  startDate?: string,
+  endDate?: string
 ): Promise<UserAsceticism[]> {
-  const res = await fetch(`${API_URL}/asceticisms/my?userId=${userId}`);
+  const url = new URL(`${API_URL}/asceticisms/my`);
+  url.searchParams.append("userId", userId.toString());
+
+  if (startDate) {
+    url.searchParams.append("startDate", startDate);
+  }
+  if (endDate) {
+    url.searchParams.append("endDate", endDate);
+  }
+
+  const res = await fetch(url.toString());
   if (!res.ok) throw new Error("Failed to fetch user asceticisms");
   return res.json();
 }
@@ -99,7 +111,12 @@ export async function createAsceticism(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to create asceticism");
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage =
+      errorData.detail || errorData.message || "Failed to create asceticism";
+    throw new Error(errorMessage);
+  }
   return res.json();
 }
 
@@ -121,7 +138,12 @@ export async function joinAsceticism(
       endDate,
     }),
   });
-  if (!res.ok) throw new Error("Failed to join asceticism");
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage =
+      errorData.detail || errorData.message || "Failed to join asceticism";
+    throw new Error(errorMessage);
+  }
   return res.json();
 }
 
@@ -131,7 +153,12 @@ export async function logProgress(entry: LogEntry): Promise<any> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(entry),
   });
-  if (!res.ok) throw new Error("Failed to log progress");
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage =
+      errorData.detail || errorData.message || "Failed to log progress";
+    throw new Error(errorMessage);
+  }
   return res.json();
 }
 

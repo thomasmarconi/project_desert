@@ -123,7 +123,6 @@ export function ManageAsceticismsPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [icon, setIcon] = useState("");
   const [trackingType, setTrackingType] = useState<
     "BOOLEAN" | "NUMERIC" | "TEXT"
   >("BOOLEAN");
@@ -149,7 +148,6 @@ export function ManageAsceticismsPage() {
     setTitle("");
     setDescription("");
     setCategory("");
-    setIcon("");
     setTrackingType("BOOLEAN");
     setEditingAsceticism(null);
   };
@@ -163,7 +161,6 @@ export function ManageAsceticismsPage() {
     setTitle(asceticism.title);
     setDescription(asceticism.description || "");
     setCategory(asceticism.category);
-    setIcon(asceticism.icon || "");
     setTrackingType(asceticism.type as "BOOLEAN" | "NUMERIC" | "TEXT");
     setEditingAsceticism(asceticism);
     setCreateDialogOpen(true);
@@ -185,7 +182,6 @@ export function ManageAsceticismsPage() {
         title,
         description: description || undefined,
         category,
-        icon: icon || undefined,
         type: trackingType,
         isTemplate: true,
       };
@@ -415,19 +411,6 @@ export function ManageAsceticismsPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="icon">Icon (optional)</Label>
-              <Input
-                id="icon"
-                placeholder="Icon name or emoji"
-                value={icon}
-                onChange={(e) => setIcon(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                You can enter an emoji or icon name
-              </p>
             </div>
           </div>
 

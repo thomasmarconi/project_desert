@@ -146,23 +146,37 @@ async def delete_asceticism(asceticism_id: int):
 @router.get(
     "/asceticisms/my", tags=["asceticisms"], response_model=List[UserAsceticism]
 )
-async def list_user_asceticisms(user_id: int = Query(..., alias="userId")):
+async def list_user_asceticisms(
+    user_id: int = Query(..., alias="userId"),
+    start_date: Optional[str] = Query(None, alias="startDate"),
+    end_date: Optional[str] = Query(None, alias="endDate"),
+):
     """
-    Get all active asceticisms for a specific user, including today's logs.
+    Get all active asceticisms for a specific user, including logs within the date range.
     """
     from datetime import datetime, timezone
 
-    # Get today's date at start of day (UTC)
-    today_start = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    # Build logs filter
+    logs_where = {}
+    if start_date and end_date:
+        logs_where["date"] = {"gte": start_date, "lte": end_date}
+    elif start_date:
+        logs_where["date"] = {"gte": start_date}
+    elif end_date:
+        logs_where["date"] = {"lte": end_date}
+    else:
+        # Default: Get today's logs only
+        today_start = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        logs_where["date"] = {"gte": today_start.isoformat()}
 
     return await db.userasceticism.find_many(
         where={"userId": user_id, "status": AsceticismStatus.ACTIVE},
         include={
             "asceticism": True,
             "logs": {
-                "where": {"date": {"gte": today_start.isoformat()}},
+                "where": logs_where,
                 "order_by": {"date": "desc"},
             },
         },

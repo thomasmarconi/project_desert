@@ -60,6 +60,7 @@ import {
   Zap,
   Trophy,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const TEST_USER_ID = 1;
 
@@ -81,6 +82,9 @@ const TIME_PERIODS: TimePeriodOption[] = [
 ];
 
 export default function ProgressDashboard() {
+  const { data: session } = useSession();
+  const userId = session?.user?.id ? parseInt(session.user.id) : null;
+
   const [progressData, setProgressData] = useState<AsceticismProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("90d");
@@ -91,14 +95,18 @@ export default function ProgressDashboard() {
   } | null>(null);
 
   useEffect(() => {
-    fetchProgress();
-  }, [timePeriod]);
+    if (userId) {
+      fetchProgress();
+    }
+  }, [timePeriod, userId]);
 
   async function fetchProgress() {
+    if (!userId) return;
+
     setLoading(true);
     try {
       const { startDate, endDate } = getDateRange(timePeriod);
-      const data = await getUserProgress(TEST_USER_ID, startDate, endDate);
+      const data = await getUserProgress(userId, startDate, endDate);
       setProgressData(data);
     } catch (e) {
       console.error("Error fetching progress:", e);
@@ -415,6 +423,18 @@ export default function ProgressDashboard() {
         description: "Starting your journey!",
       };
     }
+  }
+
+  if (!session || !userId) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-lg text-muted-foreground">
+        <BarChart3 size={48} className="mb-4 opacity-50" />
+        <p className="text-lg font-semibold">Please sign in</p>
+        <p className="text-sm text-center max-w-md mt-2">
+          You need to be logged in to view your progress data.
+        </p>
+      </div>
+    );
   }
 
   if (loading) {

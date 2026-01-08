@@ -39,8 +39,7 @@ import {
   Leaf,
   Zap,
 } from "lucide-react";
-
-const TEST_USER_ID = 1;
+import { cn } from "@/lib/utils";
 
 // Predefined categories with icons and colors
 const CATEGORIES = [
@@ -102,10 +101,18 @@ const TRACKING_TYPES = [
 
 interface CreateAsceticismFormProps {
   onSuccess?: () => void;
+  isAdmin?: boolean;
+  userId?: number;
+  disabled?: boolean;
+  onSignInClick?: () => void;
 }
 
 export default function CreateAsceticismForm({
   onSuccess,
+  isAdmin,
+  userId,
+  disabled = false,
+  onSignInClick,
 }: CreateAsceticismFormProps) {
   const [formData, setFormData] = useState({
     title: "",
@@ -122,6 +129,11 @@ export default function CreateAsceticismForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!userId) {
+      toast.error("You must be logged in to create a practice");
+      return;
+    }
 
     // Validation
     if (!formData.title.trim()) {
@@ -159,12 +171,12 @@ export default function CreateAsceticismForm({
         category: finalCategory,
         type: formData.type,
         icon: iconName,
-        creatorId: TEST_USER_ID,
+        creatorId: userId,
       });
 
       // Automatically join the user to the newly created asceticism
       await joinAsceticism(
-        TEST_USER_ID,
+        userId,
         newAsceticism.id,
         undefined,
         formData.startDate || undefined,
@@ -205,7 +217,23 @@ export default function CreateAsceticismForm({
 
   return (
     <Card className="max-w-2xl mx-auto">
-      <CardHeader className="space-y-2">
+      {disabled && (
+        <div className=" border-b p-8 text-center">
+          <Sparkles
+            size={48}
+            className="mx-auto mb-4 text-primary opacity-60"
+          />
+          <p className="text-lg font-medium mb-2">Create Your Own Practices</p>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+            Design custom ascetic practices tailored to your spiritual journey.
+            Sign in to start creating.
+          </p>
+          <Button onClick={onSignInClick} size="lg">
+            Sign In to Create
+          </Button>
+        </div>
+      )}
+      <CardHeader className={cn("space-y-2", disabled && "pt-8")}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg shadow-sm">
             <Sparkles className="h-5 w-5 text-white" />
@@ -236,6 +264,7 @@ export default function CreateAsceticismForm({
               }
               className="text-base"
               required
+              disabled={disabled}
             />
             <p className="text-sm text-muted-foreground">
               Give your practice a clear, meaningful name
@@ -255,6 +284,7 @@ export default function CreateAsceticismForm({
                 setFormData({ ...formData, description: e.target.value })
               }
               className="min-h-[100px] text-base resize-none"
+              disabled={disabled}
             />
             <p className="text-sm text-muted-foreground">
               Optional: Add details about what this practice involves
@@ -272,6 +302,7 @@ export default function CreateAsceticismForm({
               onValueChange={(value) =>
                 setFormData({ ...formData, category: value })
               }
+              disabled={disabled}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a category" />
@@ -302,6 +333,7 @@ export default function CreateAsceticismForm({
                     setFormData({ ...formData, customCategory: e.target.value })
                   }
                   className="text-base"
+                  disabled={disabled}
                 />
               </div>
             )}
@@ -322,6 +354,7 @@ export default function CreateAsceticismForm({
                     onClick={() =>
                       setFormData({ ...formData, type: type.value as any })
                     }
+                    disabled={disabled}
                     className={`
                       text-left p-4 rounded-lg border-2 transition-all h-full
                       ${
@@ -329,6 +362,7 @@ export default function CreateAsceticismForm({
                           ? "border-primary bg-primary/5 shadow-sm"
                           : "border-border hover:border-primary/50 hover:bg-accent"
                       }
+                      ${disabled ? "opacity-50 cursor-not-allowed" : ""}
                     `}
                   >
                     <div className="space-y-1">
@@ -462,14 +496,14 @@ export default function CreateAsceticismForm({
                 endDate: "",
               });
             }}
-            disabled={isSubmitting}
+            disabled={isSubmitting || disabled}
           >
             Clear Form
           </Button>
           <Button
             type="submit"
             className="flex-1 gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
-            disabled={isSubmitting}
+            disabled={isSubmitting || disabled}
           >
             {isSubmitting ? (
               <>Creating...</>

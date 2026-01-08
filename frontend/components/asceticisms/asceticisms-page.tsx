@@ -2,6 +2,7 @@
 
 // Updated with improved styling and spacing
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import {
   getAsceticisms,
   getUserAsceticisms,
@@ -46,6 +47,9 @@ import {
   Zap,
   Hash,
   FileText,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
 import {
   Dialog,
@@ -68,15 +72,18 @@ import { cn } from "@/lib/utils";
 import CreateAsceticismForm from "./create-asceticism-form";
 import ProgressDashboard from "./progress-dashboard";
 import { Textarea } from "@/components/ui/textarea";
-
-const TEST_USER_ID = 1;
-// TODO: Replace with actual user role check from authentication
-const IS_ADMIN = false; // Set to true for testing admin features
+import GoogleSignIn from "@/components/auth/google-sign-in";
 
 export default function AsceticismsPage() {
+  const { data: session } = useSession();
+  const userId = session?.user?.id ? parseInt(session.user.id) : null;
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const [templates, setTemplates] = useState<Asceticism[]>([]);
   const [myAsceticisms, setMyAsceticisms] = useState<UserAsceticism[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewingDate, setViewingDate] = useState<Date>(new Date());
+  const [completingAll, setCompletingAll] = useState(false);
 
   // Join dialog state
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
@@ -116,19 +123,35 @@ export default function AsceticismsPage() {
   const [deleteAsceticismTitle, setDeleteAsceticismTitle] =
     useState<string>("");
 
+  // Sign-in prompt dialog state
+  const [signInDialogOpen, setSignInDialogOpen] = useState(false);
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [userId]);
 
   async function fetchData() {
     setLoading(true);
     try {
-      const [all, mine] = await Promise.all([
-        getAsceticisms(),
-        getUserAsceticisms(TEST_USER_ID),
-      ]);
+      // Always fetch templates (for browse tab)
+      const all = await getAsceticisms();
       setTemplates(all);
-      setMyAsceticisms(mine);
+
+      // Only fetch user asceticisms if authenticated
+      if (userId) {
+        // Fetch logs for 90 days before and 1 day after (to cover today)
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 1);
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 90);
+
+        const mine = await getUserAsceticisms(
+          userId,
+          startDate.toISOString(),
+          endDate.toISOString()
+        );
+        setMyAsceticisms(mine);
+      }
     } catch (e) {
       console.error(e);
       toast.error("Failed to load asceticisms");
@@ -138,6 +161,10 @@ export default function AsceticismsPage() {
   }
 
   function handleJoinClick(id: number) {
+    if (!session || !userId) {
+      setSignInDialogOpen(true);
+      return;
+    }
     setSelectedTemplateId(id);
     setJoinStartDate(new Date());
     setJoinEndDate(undefined);
@@ -145,11 +172,11 @@ export default function AsceticismsPage() {
   }
 
   async function handleJoinConfirm() {
-    if (!selectedTemplateId) return;
+    if (!selectedTemplateId || !userId) return;
 
     try {
       await joinAsceticism(
-        TEST_USER_ID,
+        userId,
         selectedTemplateId,
         undefined,
         joinStartDate?.toISOString(),
@@ -158,8 +185,9 @@ export default function AsceticismsPage() {
       toast.success("Joined asceticism!");
       setJoinDialogOpen(false);
       fetchData();
-    } catch (e) {
-      toast.error("Failed to join.");
+    } catch (e: any) {
+      console.error("Failed to join asceticism:", e);
+      toast.error(e.message || "Failed to join.");
     }
   }
 
@@ -199,14 +227,14 @@ export default function AsceticismsPage() {
       setLogDialogOpen(true);
     } else {
       // Boolean type - log directly
-      const date = new Date().toISOString();
+      const date = viewingDate.toISOString();
       try {
         await logProgress({
           userAsceticismId,
           date,
           completed: true,
         });
-        toast.success("Progress logged for today!");
+        toast.success("Progress logged!");
         fetchData();
       } catch (e) {
         toast.error("Failed to log progress.");
@@ -217,7 +245,7 @@ export default function AsceticismsPage() {
   async function handleLogConfirm() {
     if (!logUserAsceticismId) return;
 
-    const date = new Date().toISOString();
+    const date = viewingDate.toISOString();
     try {
       const logData: any = {
         userAsceticismId: logUserAsceticismId,
@@ -269,18 +297,106 @@ export default function AsceticismsPage() {
     }
   }
 
-  // Helper function to check if an asceticism has been logged today
-  function hasLoggedToday(ua: UserAsceticism): boolean {
-    // Get today's date in YYYY-MM-DD format (local timezone)
-    const today = new Date();
-    const todayStr = today.toISOString().split("T")[0];
-
-    // Check if there's a log entry for today
+  // Helper function to check if an asceticism has been logged on viewing date
+  function hasLoggedOnDate(ua: UserAsceticism): boolean {
+    const dateStr = viewingDate.toISOString().split("T")[0];
     const logs = ua.logs || [];
     return logs.some((log) => {
       const logDate = new Date(log.date).toISOString().split("T")[0];
-      return logDate === todayStr && log.completed;
+      return logDate === dateStr && log.completed;
     });
+  }
+
+  // Helper to get the log for the viewing date
+  function getLogForDate(ua: UserAsceticism) {
+    const dateStr = viewingDate.toISOString().split("T")[0];
+    const logs = ua.logs || [];
+    return logs.find((log) => {
+      const logDate = new Date(log.date).toISOString().split("T")[0];
+      return logDate === dateStr;
+    });
+  }
+
+  // Check if viewing date is today
+  function isViewingToday(): boolean {
+    const today = new Date();
+    return (
+      viewingDate.toISOString().split("T")[0] ===
+      today.toISOString().split("T")[0]
+    );
+  }
+
+  // Check if viewing date is in the future
+  function isViewingFuture(): boolean {
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+    const viewingStr = viewingDate.toISOString().split("T")[0];
+    return viewingStr > todayStr;
+  }
+
+  // Navigate to previous day
+  function goToPreviousDay() {
+    const newDate = new Date(viewingDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setViewingDate(newDate);
+  }
+
+  // Navigate to next day
+  function goToNextDay() {
+    const newDate = new Date(viewingDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setViewingDate(newDate);
+  }
+
+  // Go to today
+  function goToToday() {
+    setViewingDate(new Date());
+  }
+
+  // Complete all boolean asceticisms for today
+  async function handleCompleteAll() {
+    if (!isViewingToday()) {
+      toast.error("You can only complete asceticisms for today");
+      return;
+    }
+
+    setCompletingAll(true);
+    try {
+      const booleanAsceticisms = myAsceticisms.filter(
+        (ua) => ua.asceticism?.type === "BOOLEAN" && !hasLoggedOnDate(ua)
+      );
+
+      if (booleanAsceticisms.length === 0) {
+        toast.info("All boolean practices already completed for today!");
+        return;
+      }
+
+      const date = new Date().toISOString();
+      await Promise.all(
+        booleanAsceticisms.map((ua) =>
+          logProgress({
+            userAsceticismId: ua.id,
+            date,
+            completed: true,
+          })
+        )
+      );
+
+      toast.success(`Completed ${booleanAsceticisms.length} practices!`);
+      fetchData();
+    } catch (e) {
+      toast.error("Failed to complete all practices.");
+    } finally {
+      setCompletingAll(false);
+    }
+  }
+
+  // Helper to convert category to title case
+  function toTitleCase(str: string): string {
+    return str
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   }
 
   // Get the icon component for a category
@@ -290,11 +406,12 @@ export default function AsceticismsPage() {
       prayer: Heart,
       meditation: Brain,
       sleep: Moon,
-      study: Book,
+      reading: Book,
       exercise: Dumbbell,
-      abstinence: Droplet,
+      "cold-exposure": Droplet,
       nature: Leaf,
       energy: Zap,
+      other: Sparkles,
     };
 
     const IconComponent = iconMap[category.toLowerCase()] || Sparkles;
@@ -313,7 +430,7 @@ export default function AsceticismsPage() {
     return <IconComponent className={className} />;
   }
 
-  if (loading)
+  if (loading && userId)
     return (
       <div className="p-8 space-y-4">
         <Skeleton className="h-12 w-48" />
@@ -355,138 +472,305 @@ export default function AsceticismsPage() {
         </TabsList>
 
         <TabsContent value="my-commitments" className="mt-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {myAsceticisms.map((ua) => (
-              <Card
-                key={ua.id}
-                className="relative overflow-hidden border-l-4 border-l-green-500 shadow-md hover:shadow-lg transition-all flex flex-col"
+          {!session || !userId ? (
+            <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-lg text-muted-foreground bg-muted/20">
+              <Flame size={64} className="mb-6 text-orange-300 opacity-80" />
+              <p className="text-lg font-medium mb-2">
+                Track Your Daily Practices
+              </p>
+              <p className="text-sm text-center max-w-md mb-4">
+                View your active commitments, log daily progress, and track
+                completion history. Sign in to start your ascetic journey.
+              </p>
+              <Button
+                onClick={() => setSignInDialogOpen(true)}
+                size="lg"
+                className="mt-2"
               >
-                <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-                  {getCategoryIcon(
-                    ua.asceticism?.category || "custom",
-                    "w-20 h-20"
+                Sign In to Get Started
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Date Navigation */}
+              <div className="flex items-center justify-between bg-card border rounded-lg p-4 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={goToPreviousDay}
+                    className="h-9 w-9"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "min-w-[200px] justify-start text-left font-normal",
+                          !viewingDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {viewingDate
+                          ? format(viewingDate, "PPP")
+                          : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={viewingDate}
+                        onSelect={(date) => date && setViewingDate(date)}
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={goToNextDay}
+                    disabled={isViewingToday() || isViewingFuture()}
+                    className="h-9 w-9"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+
+                  {!isViewingToday() && (
+                    <Button variant="secondary" onClick={goToToday} size="sm">
+                      Today
+                    </Button>
                   )}
                 </div>
-                <CardHeader className="space-y-4 pb-4">
-                  <div className="flex justify-between items-start gap-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge
-                        variant="outline"
-                        className="bg-green-50 text-green-700 border-green-200 px-3 py-1"
-                      >
-                        {getCategoryIcon(
-                          ua.asceticism?.category || "custom",
-                          "w-3 h-3 mr-1.5 inline"
-                        )}
-                        {ua.asceticism?.category}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1"
-                      >
-                        {getTypeIcon(
-                          ua.asceticism?.type || "BOOLEAN",
-                          "w-3 h-3 mr-1.5 inline"
-                        )}
-                        {ua.asceticism?.type}
-                      </Badge>
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditClick(ua);
-                        }}
-                        title="Edit dates"
-                      >
-                        <Edit size={18} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLeaveClick(
-                            ua.id,
-                            ua.asceticism?.title || "this practice"
-                          );
-                        }}
-                        title="Remove commitment"
-                      >
-                        <X size={18} />
-                      </Button>
-                    </div>
-                  </div>
-                  <CardTitle className="text-xl leading-tight">
-                    {ua.asceticism?.title}
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    Started: {new Date(ua.startDate).toLocaleDateString()}
-                    {ua.endDate &&
-                      ` • Ends: ${new Date(ua.endDate).toLocaleDateString()}`}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 pb-4 flex-1">
-                  <div className="text-sm text-muted-foreground leading-relaxed">
-                    {ua.asceticism?.description || "Daily practice."}
-                  </div>
-                  {ua.asceticism?.type === "NUMERIC" && ua.targetValue && (
-                    <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
-                      <span className="font-medium">Target:</span>{" "}
-                      {ua.targetValue}
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="pt-4">
-                  {(() => {
-                    const loggedToday = hasLoggedToday(ua);
-                    const type = ua.asceticism?.type || "BOOLEAN";
 
-                    return (
-                      <Button
-                        onClick={() => handleLog(ua.id, type)}
-                        className="w-full gap-2 shadow-sm h-11 text-base font-medium"
-                        disabled={loggedToday}
-                        variant={loggedToday ? "secondary" : "default"}
-                      >
-                        {getTypeIcon(type, "w-5 h-5")}
-                        {loggedToday
-                          ? type === "BOOLEAN"
-                            ? "Completed Today"
-                            : type === "NUMERIC"
-                            ? "Value Logged Today"
-                            : "Entry Logged Today"
-                          : type === "BOOLEAN"
-                          ? "Log Complete"
-                          : type === "NUMERIC"
-                          ? "Log Value"
-                          : "Add Entry"}
-                      </Button>
-                    );
-                  })()}
-                </CardFooter>
-              </Card>
-            ))}
-            {myAsceticisms.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-lg text-muted-foreground bg-muted/20">
-                <Flame size={64} className="mb-6 text-orange-300 opacity-80" />
-                <p className="text-lg font-medium mb-2">
-                  You haven't committed to any practices yet.
-                </p>
-                <p className="text-sm">
-                  Switch to "Browse Practices" to get started.
-                </p>
+                {isViewingToday() &&
+                  myAsceticisms.some(
+                    (ua) =>
+                      ua.asceticism?.type === "BOOLEAN" && !hasLoggedOnDate(ua)
+                  ) && (
+                    <Button
+                      onClick={handleCompleteAll}
+                      disabled={completingAll}
+                      variant="default"
+                      className="gap-2"
+                    >
+                      {completingAll ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Completing...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Complete All
+                        </>
+                      )}
+                    </Button>
+                  )}
               </div>
-            )}
-          </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {myAsceticisms.map((ua) => (
+                  <Card
+                    key={ua.id}
+                    className="relative overflow-hidden border-l-4 border-l-green-500 shadow-md hover:shadow-lg transition-all flex flex-col"
+                  >
+                    <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+                      {getCategoryIcon(
+                        ua.asceticism?.category || "custom",
+                        "w-20 h-20"
+                      )}
+                    </div>
+                    <CardHeader className="space-y-4 pb-4">
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex flex-wrap gap-2">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200 px-3 py-1"
+                          >
+                            {getCategoryIcon(
+                              ua.asceticism?.category || "custom",
+                              "w-3 h-3 mr-1.5 inline"
+                            )}
+                            {toTitleCase(ua.asceticism?.category || "custom")}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1"
+                          >
+                            {getTypeIcon(
+                              ua.asceticism?.type || "BOOLEAN",
+                              "w-3 h-3 mr-1.5 inline"
+                            )}
+                            {ua.asceticism?.type}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(ua);
+                            }}
+                            title="Edit dates"
+                          >
+                            <Edit size={18} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLeaveClick(
+                                ua.id,
+                                ua.asceticism?.title || "this practice"
+                              );
+                            }}
+                            title="Remove commitment"
+                          >
+                            <X size={18} />
+                          </Button>
+                        </div>
+                      </div>
+                      <CardTitle className="text-xl leading-tight">
+                        {ua.asceticism?.title}
+                      </CardTitle>
+                      <CardDescription className="text-sm">
+                        Started: {new Date(ua.startDate).toLocaleDateString()}
+                        {ua.endDate &&
+                          ` • Ends: ${new Date(
+                            ua.endDate
+                          ).toLocaleDateString()}`}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pb-4 flex-1">
+                      <div className="text-sm text-muted-foreground leading-relaxed">
+                        {ua.asceticism?.description || "Daily practice."}
+                      </div>
+                      {ua.asceticism?.type === "NUMERIC" && ua.targetValue && (
+                        <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
+                          <span className="font-medium">Target:</span>{" "}
+                          {ua.targetValue}
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="pt-4 flex-col gap-3">
+                      {(() => {
+                        const logged = hasLoggedOnDate(ua);
+                        const logEntry = getLogForDate(ua);
+                        const type = ua.asceticism?.type || "BOOLEAN";
+                        const isToday = isViewingToday();
+
+                        return (
+                          <>
+                            {/* Show logged data if exists (skip boolean completed box to avoid duplication) */}
+                            {logEntry && (
+                              <div className="w-full space-y-2 text-sm">
+                                {type === "NUMERIC" &&
+                                  logEntry.value !== undefined && (
+                                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                                        Value:{" "}
+                                      </span>
+                                      <span className="text-blue-700 dark:text-blue-300">
+                                        {logEntry.value}
+                                      </span>
+                                    </div>
+                                  )}
+                                {type === "TEXT" && logEntry.notes && (
+                                  <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-md p-3">
+                                    <span className="font-medium text-purple-900 dark:text-purple-100 block mb-1">
+                                      Entry:
+                                    </span>
+                                    <p className="text-purple-700 dark:text-purple-300 text-xs leading-relaxed">
+                                      {logEntry.notes}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Action button */}
+                            <Button
+                              onClick={() => handleLog(ua.id, type)}
+                              className="w-full gap-2 shadow-sm h-11 text-base font-medium"
+                              disabled={
+                                (!isToday && logged) || isViewingFuture()
+                              }
+                              variant={logged ? "secondary" : "default"}
+                            >
+                              {getTypeIcon(type, "w-5 h-5")}
+                              {logged
+                                ? type === "BOOLEAN"
+                                  ? "Completed"
+                                  : type === "NUMERIC"
+                                  ? isToday
+                                    ? "Update Value"
+                                    : "Value Logged"
+                                  : isToday
+                                  ? "Update Entry"
+                                  : "Entry Logged"
+                                : type === "BOOLEAN"
+                                ? "Log Complete"
+                                : type === "NUMERIC"
+                                ? "Log Value"
+                                : "Add Entry"}
+                            </Button>
+                          </>
+                        );
+                      })()}
+                    </CardFooter>
+                  </Card>
+                ))}
+                {myAsceticisms.length === 0 && (
+                  <div className="col-span-full flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-lg text-muted-foreground bg-muted/20">
+                    <Flame
+                      size={64}
+                      className="mb-6 text-orange-300 opacity-80"
+                    />
+                    <p className="text-lg font-medium mb-2">
+                      You haven't committed to any practices yet.
+                    </p>
+                    <p className="text-sm">
+                      Switch to "Browse Practices" to get started.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="progress" className="mt-8">
-          <ProgressDashboard />
+          {!session || !userId ? (
+            <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-lg text-muted-foreground bg-muted/20">
+              <BarChart3 size={64} className="mb-6 text-blue-300 opacity-80" />
+              <p className="text-lg font-medium mb-2">
+                Visualize Your Progress
+              </p>
+              <p className="text-sm text-center max-w-md mb-4">
+                View detailed analytics, completion streaks, and heatmaps of
+                your ascetic practices. Sign in to access your personal
+                dashboard.
+              </p>
+              <Button
+                onClick={() => setSignInDialogOpen(true)}
+                size="lg"
+                className="mt-2"
+              >
+                Sign In to View Progress
+              </Button>
+            </div>
+          ) : (
+            <ProgressDashboard />
+          )}
         </TabsContent>
 
         <TabsContent value="browse" className="mt-8">
@@ -503,7 +787,7 @@ export default function AsceticismsPage() {
                   <div className="flex justify-between items-start gap-2 flex-wrap">
                     <Badge variant="secondary" className="px-3 py-1">
                       {getCategoryIcon(t.category, "w-3 h-3 mr-1.5 inline")}
-                      {t.category}
+                      {toTitleCase(t.category)}
                     </Badge>
                     <Badge variant="outline" className="px-3 py-1">
                       {getTypeIcon(t.type, "w-3 h-3 mr-1.5 inline")}
@@ -533,7 +817,7 @@ export default function AsceticismsPage() {
             {templates.length === 0 && (
               <div className="col-span-full text-center p-16 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/20">
                 <p className="text-lg font-medium">
-                  No templates found. Create one via API!
+                  No templates found. Contact an admin about creating some.
                 </p>
               </div>
             )}
@@ -541,7 +825,13 @@ export default function AsceticismsPage() {
         </TabsContent>
 
         <TabsContent value="create" className="mt-8">
-          <CreateAsceticismForm onSuccess={fetchData} isAdmin={IS_ADMIN} />
+          <CreateAsceticismForm
+            onSuccess={fetchData}
+            isAdmin={isAdmin}
+            userId={userId ?? undefined}
+            disabled={!session || !userId}
+            onSignInClick={() => setSignInDialogOpen(true)}
+          />
         </TabsContent>
       </Tabs>
 
@@ -829,6 +1119,29 @@ export default function AsceticismsPage() {
             >
               Remove
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sign In Dialog */}
+      <Dialog open={signInDialogOpen} onOpenChange={setSignInDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-xl">Sign In Required</DialogTitle>
+            <DialogDescription className="text-base">
+              Please sign in to start tracking your ascetic practices. Create an
+              account or sign in to access all features.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setSignInDialogOpen(false)}
+              className="h-10 px-6 mr-2"
+            >
+              Cancel
+            </Button>
+            <GoogleSignIn />
           </DialogFooter>
         </DialogContent>
       </Dialog>

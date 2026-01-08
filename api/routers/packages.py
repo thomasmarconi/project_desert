@@ -123,16 +123,20 @@ async def create_package(
     """
     user = await require_admin(x_user_email)
 
-    # Create the package
-    package = await db.asceticismpackage.create(
-        data={
-            "title": package_data.title,
-            "description": package_data.description,
-            "creatorId": user.id,
-            "metadata": package_data.metadata,
-            "isPublished": False,
-        }
-    )
+    # Create the package - only include fields that are not None
+    create_data = {
+        "title": package_data.title,
+        "creatorId": user.id,
+        "isPublished": False,
+    }
+    
+    if package_data.description is not None:
+        create_data["description"] = package_data.description
+    
+    if package_data.metadata is not None:
+        create_data["metadata"] = package_data.metadata
+    
+    package = await db.asceticismpackage.create(data=create_data)
 
     # Create package items
     items = []
@@ -202,12 +206,13 @@ async def update_package(
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
 
-    # Build update data
+    # Build update data - only include fields that are explicitly provided
     update_data = {}
     if package_data.title is not None:
         update_data["title"] = package_data.title
     if package_data.description is not None:
         update_data["description"] = package_data.description
+    # Only set metadata if explicitly provided (even if None, we skip it to avoid Prisma issues)
     if package_data.metadata is not None:
         update_data["metadata"] = package_data.metadata
 
