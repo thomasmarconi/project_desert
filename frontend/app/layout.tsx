@@ -5,8 +5,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
-import { auth } from "@/auth";
 import Banned from "@/components/auth/banned";
+import { getCurrentUser } from "@/lib/services/adminService";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,14 +28,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
+  const user = await getCurrentUser();
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {session?.user?.isBanned ? (
+        {user && user.isBanned ? (
           <Banned />
         ) : (
           <SessionProvider>

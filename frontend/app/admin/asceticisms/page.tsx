@@ -14,24 +14,6 @@ export default async function AdminManageAsceticismsPage() {
     redirect("/api/auth/signin");
   }
 
-  // Check if user is banned
-  if (currentUser.isBanned) {
-    return (
-      <SidebarInset>
-        <div className="container mx-auto p-6">
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertTitle>Access Denied</AlertTitle>
-            <AlertDescription>
-              Your account has been banned. Please contact support for
-              assistance.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </SidebarInset>
-    );
-  }
-
   // Check if user is admin
   if (currentUser.role !== UserRole.ADMIN) {
     return (
