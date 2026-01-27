@@ -30,23 +30,23 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
 
-  if (session?.user?.isBanned) {
-    return <Banned />;
-  }
-
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarTrigger />
-            {children}
-            <Toaster />
-          </SidebarProvider>
-        </SessionProvider>
+        {session?.user?.isBanned ? (
+          <Banned />
+        ) : (
+          <SessionProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarTrigger />
+              {children}
+              <Toaster />
+            </SidebarProvider>
+          </SessionProvider>
+        )}
       </body>
     </html>
   );
