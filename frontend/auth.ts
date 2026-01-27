@@ -48,7 +48,15 @@ declare module "@auth/core/adapters" {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PostgresAdapter(pool),
-  providers: [Google],
+  providers: [
+    Google({
+      authorization: {
+        params: {
+          prompt: "select_account",
+        },
+      },
+    }),
+  ],
   callbacks: {
     session({ session, token, user }) {
       // `session.user.id` is now a valid property, and will be type-checked
