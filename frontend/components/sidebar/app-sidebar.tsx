@@ -2,13 +2,9 @@ import {
   Book,
   ChevronUp,
   Home,
-  Settings,
-  User2,
   Waves,
   Package,
   ShieldCheck,
-  LogOut,
-  LogIn,
 } from "lucide-react";
 
 import {
@@ -25,9 +21,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { auth } from "@/auth";
@@ -56,16 +50,6 @@ const items = [
     url: "/daily-readings",
     icon: Book,
   },
-  // {
-  //   title: "Search",
-  //   url: "/search",
-  //   icon: Search,
-  // },
-  // {
-  //   title: "Settings",
-  //   url: "/settings",
-  //   icon: Settings,
-  // },
 ];
 
 const adminItems = [
@@ -178,13 +162,6 @@ export default async function AppSidebar() {
                   align="end"
                   sideOffset={4}
                 >
-                  {/* <DropdownMenuItem asChild>
-                    <a href="/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator /> */}
                   <div className="p-1">
                     <SidebarSignOut />
                   </div>

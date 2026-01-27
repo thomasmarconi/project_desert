@@ -23,6 +23,7 @@ declare module "next-auth" {
       /** The user's id. */
       id: string;
       role: string;
+      isBanned: boolean;
       /**
        * By default, TypeScript merges new interface properties and overwrites existing ones.
        * In this case, the default session user properties will be overwritten,
@@ -30,6 +31,18 @@ declare module "next-auth" {
        * you need to add them back into the newly declared interface.
        */
     } & DefaultSession["user"];
+  }
+
+  interface User {
+    role: string;
+    isBanned: boolean;
+  }
+}
+
+declare module "@auth/core/adapters" {
+  interface AdapterUser {
+    role: string;
+    isBanned: boolean;
   }
 }
 
@@ -45,6 +58,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         user: {
           ...session.user,
           id: user.id,
+          role: user.role,
+          isBanned: user.isBanned,
         },
       };
     },

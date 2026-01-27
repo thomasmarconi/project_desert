@@ -5,6 +5,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
+import { auth } from "@/auth";
+import Banned from "@/components/auth/banned";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,11 +23,17 @@ export const metadata: Metadata = {
   description: "Project Desert",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
+  if (session?.user?.isBanned) {
+    return <Banned />;
+  }
+
   return (
     <html lang="en">
       <body

@@ -50,7 +50,7 @@ export default async function AdminPage() {
   return (
     <div className="container mx-auto py-10 space-y-8">
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           Admin Dashboard
         </h1>
         <p className="text-muted-foreground text-lg">
