@@ -207,9 +207,10 @@ export default function ProgressDashboard() {
     );
 
     // Create a map of date strings to log entries
+    // Extract date directly from ISO string to avoid timezone conversion
     const logMap = new Map(
       (logs || []).map((log) => {
-        const dateKey = format(new Date(log.date), "yyyy-MM-dd");
+        const dateKey = log.date.split("T")[0]; // "2026-01-30T00:00:00Z" -> "2026-01-30"
         return [dateKey, log];
       }),
     );
