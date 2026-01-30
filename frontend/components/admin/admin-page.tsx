@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ShieldAlert } from "lucide-react";
 import { auth } from "@/auth";
-import { UserRole } from "@/lib/prisma/enums";
+import { UserRole } from "@/types/enums";
 
 export default async function AdminPage() {
   const session = await auth();

@@ -1,0 +1,406 @@
+"""Packages router for managing asceticism packages."""
+
+from typing import Optional
+from datetime import datetime
+from fastapi import APIRouter, HTTPException, Header, Depends
+from sqlmodel import Session, select
+from app.core.database import get_session
+from app.models import (
+    AsceticismPackage,
+    PackageItem,
+    User,
+    Asceticism,
+    UserAsceticism,
+    UserRole,
+    AsceticismStatus,
+)
+from app.schemas.packages import (
+    PackageItemInput,
+    PackageCreate,
+    PackageUpdate,
+    AsceticismInfo,
+    PackageItemResponse,
+    PackageResponse,
+)
+
+router = APIRouter(prefix="/packages", tags=["packages"])
+
+
+async def get_user_by_email(email: str, session: Session) -> Optional[User]:
+    """Get user by email."""
+    statement = select(User).where(User.email == email)
+    return session.exec(statement).first()
+
+
+async def require_admin(x_user_email: Optional[str], session: Session) -> User:
+    """Verify that the user is an admin."""
+    if not x_user_email:
+        raise HTTPException(status_code=401, detail="Unauthorized: Not logged in")
+
+    user = await get_user_by_email(x_user_email, session)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized: User not found")
+
+    if user.isBanned:
+        raise HTTPException(status_code=403, detail="Unauthorized: User is banned")
+
+    if user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=403, detail="Unauthorized: Admin access required"
+        )
+
+    return user
+
+
+async def require_authenticated_user(
+    x_user_email: Optional[str], session: Session
+) -> User:
+    """Verify that the user is authenticated."""
+    if not x_user_email:
+        raise HTTPException(status_code=401, detail="Unauthorized: Not logged in")
+
+    user = await get_user_by_email(x_user_email, session)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized: User not found")
+
+    if user.isBanned:
+        raise HTTPException(status_code=403, detail="Unauthorized: User is banned")
+
+    return user
+
+
+def format_package_response(
+    package: AsceticismPackage, items: list[tuple[PackageItem, Asceticism]]
+) -> PackageResponse:
+    """Format package with items for response."""
+    formatted_items = []
+    for item, asceticism in items:
+        formatted_items.append(
+            PackageItemResponse(
+                id=item.id,
+                asceticismId=item.asceticismId,
+                order=item.order,
+                notes=item.notes,
+                asceticism=AsceticismInfo(
+                    id=asceticism.id,
+                    title=asceticism.title,
+                    description=asceticism.description,
+                    category=asceticism.category,
+                    icon=asceticism.icon,
+                    type=asceticism.type.value,
+                ),
+            )
+        )
+
+    return PackageResponse(
+        id=package.id,
+        title=package.title,
+        description=package.description,
+        creatorId=package.creatorId,
+        isPublished=package.isPublished,
+        metadata=package.metadata,
+        createdAt=package.createdAt,
+        updatedAt=package.updatedAt,
+        items=formatted_items,
+        itemCount=len(formatted_items),
+    )
+
+
+@router.post("/", response_model=PackageResponse)
+async def create_package(
+    package_data: PackageCreate,
+    x_user_email: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Create a new asceticism package (admin only)."""
+    user = await require_admin(x_user_email, session)
+
+    # Create the package
+    package = AsceticismPackage(
+        title=package_data.title,
+        description=package_data.description,
+        creatorId=user.id,
+        isPublished=False,
+        custom_metadata=package_data.custom_metadata,
+    )
+
+    session.add(package)
+    session.commit()
+    session.refresh(package)
+
+    # Create package items
+    items = []
+    for item_data in package_data.items:
+        # Verify asceticism exists
+        asceticism = session.get(Asceticism, item_data.asceticismId)
+        if not asceticism:
+            # Cleanup: delete the package if an asceticism doesn't exist
+            session.delete(package)
+            session.commit()
+            raise HTTPException(
+                status_code=404, detail=f"Asceticism {item_data.asceticismId} not found"
+            )
+
+        item = PackageItem(
+            packageId=package.id,
+            asceticismId=item_data.asceticismId,
+            order=item_data.order,
+            notes=item_data.notes,
+        )
+        session.add(item)
+        items.append((item, asceticism))
+
+    session.commit()
+
+    return format_package_response(package, items)
+
+
+@router.get("/admin/all", response_model=list[PackageResponse])
+async def get_all_packages_admin(
+    x_user_email: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Get all packages including unpublished ones (admin only)."""
+    await require_admin(x_user_email, session)
+
+    statement = select(AsceticismPackage).order_by(AsceticismPackage.createdAt.desc())
+    packages = session.exec(statement).all()
+
+    result = []
+    for package in packages:
+        # Get package items with asceticisms
+        items_stmt = (
+            select(PackageItem, Asceticism)
+            .join(Asceticism, PackageItem.asceticismId == Asceticism.id)
+            .where(PackageItem.packageId == package.id)
+            .order_by(PackageItem.order.asc())
+        )
+        items = session.exec(items_stmt).all()
+
+        result.append(format_package_response(package, items))
+
+    return result
+
+
+@router.put("/{package_id}", response_model=PackageResponse)
+async def update_package(
+    package_id: int,
+    package_data: PackageUpdate,
+    x_user_email: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Update a package (admin only)."""
+    await require_admin(x_user_email, session)
+
+    # Check if package exists
+    package = session.get(AsceticismPackage, package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    # Update package fields
+    if package_data.title is not None:
+        package.title = package_data.title
+    if package_data.description is not None:
+        package.description = package_data.description
+    if package_data.custom_metadata is not None:
+        package.custom_metadata = package_data.custom_metadata
+
+    package.updatedAt = datetime.utcnow()
+
+    # Update items if provided
+    if package_data.items is not None:
+        # Delete existing items
+        delete_stmt = select(PackageItem).where(PackageItem.packageId == package_id)
+        existing_items = session.exec(delete_stmt).all()
+        for item in existing_items:
+            session.delete(item)
+
+        # Create new items
+        for item_data in package_data.items:
+            # Verify asceticism exists
+            asceticism = session.get(Asceticism, item_data.asceticismId)
+            if not asceticism:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Asceticism {item_data.asceticismId} not found",
+                )
+
+            item = PackageItem(
+                packageId=package_id,
+                asceticismId=item_data.asceticismId,
+                order=item_data.order,
+                notes=item_data.notes,
+            )
+            session.add(item)
+
+    session.add(package)
+    session.commit()
+    session.refresh(package)
+
+    # Get updated items
+    items_stmt = (
+        select(PackageItem, Asceticism)
+        .join(Asceticism, PackageItem.asceticismId == Asceticism.id)
+        .where(PackageItem.packageId == package_id)
+        .order_by(PackageItem.order.asc())
+    )
+    items = session.exec(items_stmt).all()
+
+    return format_package_response(package, items)
+
+
+@router.post("/{package_id}/publish")
+async def publish_package(
+    package_id: int,
+    x_user_email: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Publish or unpublish a package (admin only)."""
+    await require_admin(x_user_email, session)
+
+    package = session.get(AsceticismPackage, package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    # Toggle published status
+    package.isPublished = not package.isPublished
+    package.updatedAt = datetime.utcnow()
+
+    session.add(package)
+    session.commit()
+
+    return {"success": True, "isPublished": package.isPublished}
+
+
+@router.delete("/{package_id}")
+async def delete_package(
+    package_id: int,
+    x_user_email: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Delete a package (admin only)."""
+    await require_admin(x_user_email, session)
+
+    package = session.get(AsceticismPackage, package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    # Delete package items first
+    items_stmt = select(PackageItem).where(PackageItem.packageId == package_id)
+    items = session.exec(items_stmt).all()
+    for item in items:
+        session.delete(item)
+
+    # Delete package
+    session.delete(package)
+    session.commit()
+
+    return {"success": True, "message": "Package deleted"}
+
+
+@router.get("/browse", response_model=list[PackageResponse])
+async def browse_published_packages(session: Session = Depends(get_session)):
+    """Get all published packages (available to all users)."""
+    statement = (
+        select(AsceticismPackage)
+        .where(AsceticismPackage.isPublished == True)
+        .order_by(AsceticismPackage.createdAt.desc())
+    )
+    packages = session.exec(statement).all()
+
+    result = []
+    for package in packages:
+        # Get package items with asceticisms
+        items_stmt = (
+            select(PackageItem, Asceticism)
+            .join(Asceticism, PackageItem.asceticismId == Asceticism.id)
+            .where(PackageItem.packageId == package.id)
+            .order_by(PackageItem.order.asc())
+        )
+        items = session.exec(items_stmt).all()
+
+        result.append(format_package_response(package, items))
+
+    return result
+
+
+@router.get("/{package_id}", response_model=PackageResponse)
+async def get_package_details(package_id: int, session: Session = Depends(get_session)):
+    """Get details of a specific published package."""
+    package = session.get(AsceticismPackage, package_id)
+
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    if not package.isPublished:
+        raise HTTPException(status_code=403, detail="Package is not published")
+
+    # Get package items with asceticisms
+    items_stmt = (
+        select(PackageItem, Asceticism)
+        .join(Asceticism, PackageItem.asceticismId == Asceticism.id)
+        .where(PackageItem.packageId == package_id)
+        .order_by(PackageItem.order.asc())
+    )
+    items = session.exec(items_stmt).all()
+
+    return format_package_response(package, items)
+
+
+@router.post("/{package_id}/add-to-account")
+async def add_package_to_account(
+    package_id: int,
+    x_user_email: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Add all asceticisms from a package to the user's account."""
+    user = await require_authenticated_user(x_user_email, session)
+
+    # Get the package
+    package = session.get(AsceticismPackage, package_id)
+
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    if not package.isPublished:
+        raise HTTPException(status_code=403, detail="Package is not published")
+
+    # Get package items
+    items_stmt = select(PackageItem).where(PackageItem.packageId == package_id)
+    items = session.exec(items_stmt).all()
+
+    # Add each asceticism to the user's account
+    added_count = 0
+    skipped_count = 0
+
+    for item in items:
+        # Check if user already has this asceticism
+        existing_stmt = select(UserAsceticism).where(
+            UserAsceticism.userId == user.id,
+            UserAsceticism.asceticismId == item.asceticismId,
+        )
+        existing = session.exec(existing_stmt).first()
+
+        if not existing:
+            # Add the asceticism to user's account
+            user_asceticism = UserAsceticism(
+                userId=user.id,
+                asceticismId=item.asceticismId,
+                status=AsceticismStatus.ACTIVE,
+            )
+            session.add(user_asceticism)
+            added_count += 1
+        else:
+            skipped_count += 1
+
+    session.commit()
+
+    return {
+        "success": True,
+        "message": f"Added {added_count} asceticism(s) to your account",
+        "addedCount": added_count,
+        "skippedCount": skipped_count,
+        "totalInPackage": len(items),
+    }

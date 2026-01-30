@@ -19,11 +19,11 @@ cp frontend/.env.example frontend/.env
 cp api/.env.example api/.env
 # Edit frontend/.env and add your AUTH_SECRET and Google OAuth credentials
 
-# 3. Install dependencies and generate Prisma clients
+# 3. Install dependencies and run migrations
 make setup
 
-# 4. Push database schema
-make db-push
+# 4. Run database migrations
+make db-migrate
 
 # 5. Run both services (in separate terminals)
 make frontend  # http://localhost:3000
@@ -42,8 +42,9 @@ make backend   # http://localhost:8000
 | `make setup-backend` | Install backend dependencies only |
 | `make frontend` | Run Next.js dev server |
 | `make backend` | Run FastAPI server |
-| `make db-push` | Push Prisma schema to database |
-| `make db-studio` | Open Prisma database GUI |
+| `make generate-types` | Generate TypeScript types from OpenAPI schema |
+| `make db-migrate` | Run Alembic database migrations |
+| `make db-migrate-create message="description"` | Create new Alembic migration |
 
 ## Environment Variables
 

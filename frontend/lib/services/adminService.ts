@@ -1,111 +1,89 @@
 "use server";
 
 import { auth } from "@/auth";
-import { UserRole } from "@/lib/prisma/enums";
+import { createAuthClient } from "@/lib/apiClient";
+import { UserRole } from "@/types/enums";
 import { revalidatePath } from "next/cache";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-/**
- * User data type returned from the API
- */
-export interface UserData {
-  id: number;
-  name: string | null;
-  email: string | null;
-  image: string | null;
-  role: UserRole;
-  isBanned: boolean;
-  emailVerified: string | null;
-  userAsceticismsCount: number;
-  groupMembersCount: number;
-}
+import type { components } from "@/types/api";
 
 /**
- * Get headers with user email for authentication
+ * User data type from the API
  */
-async function getAuthHeaders() {
+export type UserData = components["schemas"]["UserResponse"];
+
+/**
+ * Get the authenticated API client for the current session
+ */
+async function getAuthClient() {
   const session = await auth();
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-  };
-
-  if (session?.user?.email) {
-    headers["x-user-email"] = session.user.email;
-  }
-
-  return headers;
+  return createAuthClient(session?.user?.email);
 }
 
 /**
  * Get all users with their details
  */
 export async function getAllUsers(): Promise<UserData[]> {
-  const headers = await getAuthHeaders();
+  const client = await getAuthClient();
 
-  const res = await fetch(`${API_URL}/admin/users`, {
-    headers,
-    cache: "no-store",
-  });
+  const { data, error } = await client.GET("/admin/users");
 
-  if (!res.ok) {
-    const error = await res
-      .json()
-      .catch(() => ({ detail: "Failed to fetch users" }));
-    throw new Error(error.detail || "Failed to fetch users");
+  if (error) {
+    const errorMessage =
+      typeof error.detail === "string"
+        ? error.detail
+        : JSON.stringify(error.detail);
+    throw new Error(errorMessage || "Failed to fetch users");
   }
 
-  return res.json();
+  return data || [];
 }
 
 /**
  * Update a user's role
  */
 export async function updateUserRole(userId: number, newRole: UserRole) {
-  const headers = await getAuthHeaders();
+  const client = await getAuthClient();
 
-  const res = await fetch(`${API_URL}/admin/users/role`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
+  const { data, error } = await client.POST("/admin/users/role", {
+    body: {
       userId,
       newRole,
-    }),
+    },
   });
 
-  if (!res.ok) {
-    const error = await res
-      .json()
-      .catch(() => ({ detail: "Failed to update role" }));
-    throw new Error(error.detail || "Failed to update role");
+  if (error) {
+    const errorMessage =
+      typeof error.detail === "string"
+        ? error.detail
+        : JSON.stringify(error.detail);
+    throw new Error(errorMessage || "Failed to update role");
   }
 
   revalidatePath("/admin");
-  return res.json();
+  return data;
 }
 
 /**
  * Ban or unban a user
  */
 export async function toggleUserBan(userId: number, isBanned: boolean) {
-  const headers = await getAuthHeaders();
+  const client = await getAuthClient();
 
-  const res = await fetch(`${API_URL}/admin/users/ban`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
+  const { data, error } = await client.POST("/admin/users/ban", {
+    body: {
       userId,
       isBanned,
-    }),
+    },
   });
 
-  if (!res.ok) {
-    const error = await res
-      .json()
-      .catch(() => ({ detail: "Failed to update ban status" }));
-    throw new Error(error.detail || "Failed to update ban status");
+  if (error) {
+    const errorMessage =
+      typeof error.detail === "string"
+        ? error.detail
+        : JSON.stringify(error.detail);
+    throw new Error(errorMessage || "Failed to update ban status");
   }
 
   revalidatePath("/admin");
-  return res.json();
+  return data;
 }

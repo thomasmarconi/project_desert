@@ -80,13 +80,17 @@ export function BrowsePackagesPage() {
         });
       } else {
         toast.info(
-          "All asceticisms from this package are already in your account"
+          "All asceticisms from this package are already in your account",
         );
       }
 
       setDetailsDialogOpen(false);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to add package to account");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to add package to account";
+      toast.error(message);
       console.error(error);
     } finally {
       setAddingPackage(false);

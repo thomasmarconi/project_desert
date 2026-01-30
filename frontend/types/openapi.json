@@ -1,0 +1,1616 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Project Desert API",
+    "description": "API for managing ascetical practices and spiritual growth",
+    "version": "2.0.0"
+  },
+  "paths": {
+    "/asceticisms/": {
+      "get": {
+        "tags": ["asceticisms"],
+        "summary": "List Asceticisms",
+        "description": "List all available asceticism templates.",
+        "operationId": "list_asceticisms_asceticisms__get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AsceticismResponse"
+                  },
+                  "title": "Response List Asceticisms Asceticisms  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["asceticisms"],
+        "summary": "Create Asceticism",
+        "description": "Create a new asceticism.",
+        "operationId": "create_asceticism_asceticisms__post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AsceticismCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AsceticismResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/asceticisms/{asceticism_id}": {
+      "put": {
+        "tags": ["asceticisms"],
+        "summary": "Update Asceticism",
+        "description": "Update an existing asceticism template.",
+        "operationId": "update_asceticism_asceticisms__asceticism_id__put",
+        "parameters": [
+          {
+            "name": "asceticism_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Asceticism Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AsceticismCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AsceticismResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["asceticisms"],
+        "summary": "Delete Asceticism",
+        "description": "Delete an asceticism template.",
+        "operationId": "delete_asceticism_asceticisms__asceticism_id__delete",
+        "parameters": [
+          {
+            "name": "asceticism_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Asceticism Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/asceticisms/my": {
+      "get": {
+        "tags": ["asceticisms"],
+        "summary": "List User Asceticisms",
+        "description": "Get all asceticisms for a specific user that overlap with the date range.",
+        "operationId": "list_user_asceticisms_asceticisms_my_get",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "title": "Userid" }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Startdate"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Enddate"
+            }
+          },
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Includearchived"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/asceticisms/join": {
+      "post": {
+        "tags": ["asceticisms"],
+        "summary": "Join Asceticism",
+        "description": "Subscribe a user to an asceticism.",
+        "operationId": "join_asceticism_asceticisms_join_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserAsceticismLink" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/asceticisms/log": {
+      "post": {
+        "tags": ["asceticisms"],
+        "summary": "Log Daily Progress",
+        "description": "Log progress for a specific day.",
+        "operationId": "log_daily_progress_asceticisms_log_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LogCreate" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LogResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/asceticisms/leave/{user_asceticism_id}": {
+      "delete": {
+        "tags": ["asceticisms"],
+        "summary": "Leave Asceticism",
+        "description": "Leave/remove an asceticism commitment.",
+        "operationId": "leave_asceticism_asceticisms_leave__user_asceticism_id__delete",
+        "parameters": [
+          {
+            "name": "user_asceticism_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "User Asceticism Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/asceticisms/my/{user_asceticism_id}": {
+      "patch": {
+        "tags": ["asceticisms"],
+        "summary": "Update User Asceticism",
+        "description": "Update a user's asceticism commitment.",
+        "operationId": "update_user_asceticism_asceticisms_my__user_asceticism_id__patch",
+        "parameters": [
+          {
+            "name": "user_asceticism_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "User Asceticism Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserAsceticismUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/asceticisms/progress": {
+      "get": {
+        "tags": ["asceticisms"],
+        "summary": "Get User Progress",
+        "description": "Get progress statistics for all user asceticisms within a date range.",
+        "operationId": "get_user_progress_asceticisms_progress_get",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "title": "Userid" }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Startdate" }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Enddate" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debug/user": {
+      "post": {
+        "summary": "Create Debug User",
+        "description": "Create a debug user for testing purposes.",
+        "operationId": "create_debug_user_debug_user_post",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Email" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Get All Users",
+        "description": "Get all users with their details and activity counts.\nRequires admin authentication.",
+        "operationId": "get_all_users_admin_users_get",
+        "parameters": [
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/UserResponse" },
+                  "title": "Response Get All Users Admin Users Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/role": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Update User Role",
+        "description": "Update a user's role.\nPrevents admins from demoting themselves.",
+        "operationId": "update_user_role_admin_users_role_post",
+        "parameters": [
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateRoleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/ban": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Toggle User Ban",
+        "description": "Ban or unban a user.\nPrevents admins from banning themselves.",
+        "operationId": "toggle_user_ban_admin_users_ban_post",
+        "parameters": [
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ToggleBanRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/current-user": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Get Current User",
+        "description": "Get current user info including role and ban status.",
+        "operationId": "get_current_user_admin_current_user_get",
+        "parameters": [
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CurrentUserResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/": {
+      "post": {
+        "tags": ["packages"],
+        "summary": "Create Package",
+        "description": "Create a new asceticism package (admin only).",
+        "operationId": "create_package_packages__post",
+        "parameters": [
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PackageCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PackageResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/admin/all": {
+      "get": {
+        "tags": ["packages"],
+        "summary": "Get All Packages Admin",
+        "description": "Get all packages including unpublished ones (admin only).",
+        "operationId": "get_all_packages_admin_packages_admin_all_get",
+        "parameters": [
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PackageResponse" },
+                  "title": "Response Get All Packages Admin Packages Admin All Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/{package_id}": {
+      "put": {
+        "tags": ["packages"],
+        "summary": "Update Package",
+        "description": "Update a package (admin only).",
+        "operationId": "update_package_packages__package_id__put",
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Package Id" }
+          },
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PackageUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PackageResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["packages"],
+        "summary": "Delete Package",
+        "description": "Delete a package (admin only).",
+        "operationId": "delete_package_packages__package_id__delete",
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Package Id" }
+          },
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["packages"],
+        "summary": "Get Package Details",
+        "description": "Get details of a specific published package.",
+        "operationId": "get_package_details_packages__package_id__get",
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Package Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PackageResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/{package_id}/publish": {
+      "post": {
+        "tags": ["packages"],
+        "summary": "Publish Package",
+        "description": "Publish or unpublish a package (admin only).",
+        "operationId": "publish_package_packages__package_id__publish_post",
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Package Id" }
+          },
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/browse": {
+      "get": {
+        "tags": ["packages"],
+        "summary": "Browse Published Packages",
+        "description": "Get all published packages (available to all users).",
+        "operationId": "browse_published_packages_packages_browse_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": { "$ref": "#/components/schemas/PackageResponse" },
+                  "type": "array",
+                  "title": "Response Browse Published Packages Packages Browse Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/{package_id}/add-to-account": {
+      "post": {
+        "tags": ["packages"],
+        "summary": "Add Package To Account",
+        "description": "Add all asceticisms from a package to the user's account.",
+        "operationId": "add_package_to_account_packages__package_id__add_to_account_post",
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Package Id" }
+          },
+          {
+            "name": "x-user-email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-readings/readings/{date}": {
+      "get": {
+        "tags": ["daily-readings"],
+        "summary": "Get Mass Readings",
+        "description": "Get Mass readings for a specific date. Checks database cache first,\nthen fetches from Universalis API if not cached.\nDate should be in YYYYMMDD format (e.g., 20260105).",
+        "operationId": "get_mass_readings_daily_readings_readings__date__get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-readings/notes": {
+      "post": {
+        "tags": ["daily-readings"],
+        "summary": "Create Or Update Note",
+        "description": "Create or update a daily reading note for a user on a specific date.",
+        "operationId": "create_or_update_note_daily_readings_notes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DailyReadingNoteCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyReadingNoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-readings/notes/{user_id}/{date}": {
+      "get": {
+        "tags": ["daily-readings"],
+        "summary": "Get Note By Date",
+        "description": "Get a user's daily reading note for a specific date.\nReturns 404 if no note exists for that date.",
+        "operationId": "get_note_by_date_daily_readings_notes__user_id___date__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "User Id" }
+          },
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyReadingNoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-readings/notes/{user_id}": {
+      "get": {
+        "tags": ["daily-readings"],
+        "summary": "Get All User Notes",
+        "description": "Get all daily reading notes for a user, ordered by date descending.",
+        "operationId": "get_all_user_notes_daily_readings_notes__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "User Id" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "default": 30,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyReadingNoteResponse"
+                  },
+                  "title": "Response Get All User Notes Daily Readings Notes  User Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-readings/notes/{note_id}": {
+      "delete": {
+        "tags": ["daily-readings"],
+        "summary": "Delete Note",
+        "description": "Delete a daily reading note by ID.",
+        "operationId": "delete_note_daily_readings_notes__note_id__delete",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Note Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Health check endpoint.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AsceticismCreate": {
+        "properties": {
+          "title": { "type": "string", "title": "Title" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "category": { "type": "string", "title": "Category" },
+          "icon": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Icon"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TrackingType",
+            "default": "BOOLEAN"
+          },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          },
+          "creatorId": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Creatorid"
+          }
+        },
+        "type": "object",
+        "required": ["title", "category"],
+        "title": "AsceticismCreate",
+        "description": "Request to create an asceticism."
+      },
+      "AsceticismInfo": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "title": { "type": "string", "title": "Title" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "category": { "type": "string", "title": "Category" },
+          "icon": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Icon"
+          },
+          "type": { "type": "string", "title": "Type" }
+        },
+        "type": "object",
+        "required": ["id", "title", "description", "category", "icon", "type"],
+        "title": "AsceticismInfo",
+        "description": "Asceticism information for package items."
+      },
+      "AsceticismResponse": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "title": { "type": "string", "title": "Title" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "category": { "type": "string", "title": "Category" },
+          "icon": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Icon"
+          },
+          "type": { "$ref": "#/components/schemas/TrackingType" },
+          "isTemplate": { "type": "boolean", "title": "Istemplate" },
+          "creatorId": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Creatorid"
+          },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "category",
+          "icon",
+          "type",
+          "isTemplate",
+          "creatorId",
+          "custom_metadata",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "AsceticismResponse",
+        "description": "Asceticism response."
+      },
+      "AsceticismStatus": {
+        "type": "string",
+        "enum": ["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"],
+        "title": "AsceticismStatus",
+        "description": "Status of a user's asceticism commitment."
+      },
+      "CurrentUserResponse": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Name"
+          },
+          "email": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Email"
+          },
+          "role": { "type": "string", "title": "Role" },
+          "isBanned": { "type": "boolean", "title": "Isbanned" }
+        },
+        "type": "object",
+        "required": ["id", "name", "email", "role", "isBanned"],
+        "title": "CurrentUserResponse",
+        "description": "Current user information."
+      },
+      "DailyReadingNoteCreate": {
+        "properties": {
+          "userId": { "type": "integer", "title": "Userid" },
+          "date": { "type": "string", "title": "Date" },
+          "notes": { "type": "string", "title": "Notes" }
+        },
+        "type": "object",
+        "required": ["userId", "date", "notes"],
+        "title": "DailyReadingNoteCreate",
+        "description": "Request to create or update a daily reading note."
+      },
+      "DailyReadingNoteResponse": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "userId": { "type": "integer", "title": "Userid" },
+          "date": { "type": "string", "title": "Date" },
+          "notes": { "type": "string", "title": "Notes" },
+          "createdAt": { "type": "string", "title": "Createdat" },
+          "updatedAt": { "type": "string", "title": "Updatedat" }
+        },
+        "type": "object",
+        "required": ["id", "userId", "date", "notes", "createdAt", "updatedAt"],
+        "title": "DailyReadingNoteResponse",
+        "description": "Daily reading note response."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": { "$ref": "#/components/schemas/ValidationError" },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LogCreate": {
+        "properties": {
+          "userAsceticismId": {
+            "type": "integer",
+            "title": "Userasceticismid"
+          },
+          "date": { "type": "string", "title": "Date" },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed",
+            "default": false
+          },
+          "value": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Value"
+          },
+          "notes": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Notes"
+          },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          }
+        },
+        "type": "object",
+        "required": ["userAsceticismId", "date"],
+        "title": "LogCreate",
+        "description": "Request to create asceticism log."
+      },
+      "LogResponse": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "userAsceticismId": {
+            "type": "integer",
+            "title": "Userasceticismid"
+          },
+          "date": { "type": "string", "format": "date-time", "title": "Date" },
+          "completed": { "type": "boolean", "title": "Completed" },
+          "value": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Value"
+          },
+          "notes": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Notes"
+          },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "userAsceticismId",
+          "date",
+          "completed",
+          "value",
+          "notes",
+          "custom_metadata",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "LogResponse",
+        "description": "Asceticism log response."
+      },
+      "PackageCreate": {
+        "properties": {
+          "title": { "type": "string", "title": "Title" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          },
+          "items": {
+            "items": { "$ref": "#/components/schemas/PackageItemInput" },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": ["title", "items"],
+        "title": "PackageCreate",
+        "description": "Request to create a package."
+      },
+      "PackageItemInput": {
+        "properties": {
+          "asceticismId": { "type": "integer", "title": "Asceticismid" },
+          "order": { "type": "integer", "title": "Order", "default": 0 },
+          "notes": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": ["asceticismId"],
+        "title": "PackageItemInput",
+        "description": "Package item input."
+      },
+      "PackageItemResponse": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "asceticismId": { "type": "integer", "title": "Asceticismid" },
+          "order": { "type": "integer", "title": "Order" },
+          "notes": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Notes"
+          },
+          "asceticism": { "$ref": "#/components/schemas/AsceticismInfo" }
+        },
+        "type": "object",
+        "required": ["id", "asceticismId", "order", "notes", "asceticism"],
+        "title": "PackageItemResponse",
+        "description": "Package item response."
+      },
+      "PackageResponse": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "title": { "type": "string", "title": "Title" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "creatorId": { "type": "integer", "title": "Creatorid" },
+          "isPublished": { "type": "boolean", "title": "Ispublished" },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          },
+          "items": {
+            "items": { "$ref": "#/components/schemas/PackageItemResponse" },
+            "type": "array",
+            "title": "Items"
+          },
+          "itemCount": { "type": "integer", "title": "Itemcount" }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "creatorId",
+          "isPublished",
+          "custom_metadata",
+          "createdAt",
+          "updatedAt",
+          "items",
+          "itemCount"
+        ],
+        "title": "PackageResponse",
+        "description": "Package response."
+      },
+      "PackageUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          },
+          "items": {
+            "anyOf": [
+              {
+                "items": { "$ref": "#/components/schemas/PackageItemInput" },
+                "type": "array"
+              },
+              { "type": "null" }
+            ],
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "title": "PackageUpdate",
+        "description": "Request to update a package."
+      },
+      "ToggleBanRequest": {
+        "properties": {
+          "userId": { "type": "integer", "title": "Userid" },
+          "isBanned": { "type": "boolean", "title": "Isbanned" }
+        },
+        "type": "object",
+        "required": ["userId", "isBanned"],
+        "title": "ToggleBanRequest",
+        "description": "Request to ban or unban a user."
+      },
+      "TrackingType": {
+        "type": "string",
+        "enum": ["BOOLEAN", "NUMERIC", "TEXT"],
+        "title": "TrackingType",
+        "description": "Tracking type enumeration for asceticisms."
+      },
+      "UpdateRoleRequest": {
+        "properties": {
+          "userId": { "type": "integer", "title": "Userid" },
+          "newRole": { "type": "string", "title": "Newrole" }
+        },
+        "type": "object",
+        "required": ["userId", "newRole"],
+        "title": "UpdateRoleRequest",
+        "description": "Request to update user role."
+      },
+      "UserAsceticismLink": {
+        "properties": {
+          "userId": { "type": "integer", "title": "Userid" },
+          "asceticismId": { "type": "integer", "title": "Asceticismid" },
+          "targetValue": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Targetvalue"
+          },
+          "startDate": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Startdate"
+          },
+          "endDate": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Enddate"
+          },
+          "custom_metadata": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Custom Metadata"
+          }
+        },
+        "type": "object",
+        "required": ["userId", "asceticismId"],
+        "title": "UserAsceticismLink",
+        "description": "Request to link user to asceticism."
+      },
+      "UserAsceticismUpdate": {
+        "properties": {
+          "startDate": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Startdate"
+          },
+          "endDate": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Enddate"
+          },
+          "targetValue": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Targetvalue"
+          },
+          "status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/AsceticismStatus" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "UserAsceticismUpdate",
+        "description": "Request to update user asceticism."
+      },
+      "UserResponse": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Name"
+          },
+          "email": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Email"
+          },
+          "image": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Image"
+          },
+          "role": { "type": "string", "title": "Role" },
+          "isBanned": { "type": "boolean", "title": "Isbanned" },
+          "emailVerified": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Emailverified"
+          },
+          "userAsceticismsCount": {
+            "type": "integer",
+            "title": "Userasceticismscount"
+          },
+          "groupMembersCount": {
+            "type": "integer",
+            "title": "Groupmemberscount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "image",
+          "role",
+          "isBanned",
+          "emailVerified",
+          "userAsceticismsCount",
+          "groupMembersCount"
+        ],
+        "title": "UserResponse",
+        "description": "User response with activity counts."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

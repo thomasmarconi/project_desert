@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserRole } from "@/lib/prisma/enums";
+import { UserRole } from "@/types/enums";
 import {
   Table,
   TableBody,
@@ -229,7 +229,7 @@ export default function UsersTable({ users, currentUserId }: UsersTableProps) {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        {getRoleBadge(user.role)}
+                        {getRoleBadge(user.role as UserRole)}
                         {user.isBanned && (
                           <Badge variant="destructive" className="w-fit">
                             <Ban className="w-3 h-3 mr-1" />
