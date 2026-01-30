@@ -1,3 +1,9 @@
+"""Asceticisms router for managing user ascetical practices.
+
+Provides endpoints for creating asceticism templates, tracking user commitments,
+and logging daily progress for spiritual practices.
+"""
+
 from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
@@ -585,4 +591,8 @@ async def get_user_progress(
 
 @router.post("/debug/user")
 async def create_debug_user(email: str):
+    """Create a debug user for testing purposes.
+
+    WARNING: This endpoint should be removed or secured in production.
+    """
     return await db.user.create(data={"email": email, "name": "Debug User"})

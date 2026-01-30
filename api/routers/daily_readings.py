@@ -1,3 +1,9 @@
+"""Daily readings router for Catholic Mass readings and notes.
+
+Provides endpoints for fetching daily Mass readings from Universalis API
+and managing user notes for each day's readings.
+"""
+
 from typing import Optional
 from datetime import datetime, timezone
 import httpx
@@ -74,10 +80,6 @@ async def get_mass_readings(date: str):
 
             return data
 
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid date format: {str(e)}"
-        ) from e
     except httpx.HTTPError as e:
         raise HTTPException(
             status_code=502, detail=f"Failed to fetch readings: {str(e)}"
@@ -85,6 +87,10 @@ async def get_mass_readings(date: str):
     except json.JSONDecodeError as e:
         raise HTTPException(
             status_code=502, detail=f"Failed to parse readings: {str(e)}"
+        ) from e
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid date format: {str(e)}"
         ) from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

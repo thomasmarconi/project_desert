@@ -5,8 +5,6 @@ import {
   joinAsceticism,
   logProgress,
   leaveAsceticism,
-  Asceticism,
-  UserAsceticism,
 } from "@/lib/services/asceticismService";
 import { toast } from "sonner";
 

@@ -1,3 +1,9 @@
+"""Packages router for managing asceticism packages.
+
+Provides endpoints for creating, browsing, and managing curated collections
+of asceticisms that users can add to their accounts.
+"""
+
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
