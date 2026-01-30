@@ -1,6 +1,11 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { client } from "@/lib/apiClient";
+import type { components } from "@/types/api";
 
-// Types
+// Export API response types from OpenAPI schema
+export type DailyReadingNote =
+  components["schemas"]["DailyReadingNoteResponse"];
+
+// Types for Mass readings
 export interface ReadingText {
   text: string;
   source?: string;
@@ -20,35 +25,26 @@ export interface MassReading {
   [key: string]: any;
 }
 
-export interface DailyReadingNote {
-  id: number;
-  userId: number;
-  date: string;
-  notes: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 /**
  * Fetch Mass readings from our backend API for a specific date
  * @param date - Date in YYYYMMDD format
  * @returns MassReading object
  */
 export async function getMassReadings(date: string): Promise<MassReading> {
-  const url = `${API_BASE_URL}/daily-readings/readings/${date}`;
+  const { data, error } = await client.GET("/daily-readings/readings/{date}", {
+    params: {
+      path: {
+        date,
+      },
+    },
+  });
 
-  try {
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
-    return await res.json();
-  } catch (error) {
+  if (error) {
     console.error("Error fetching Mass readings:", error);
     throw new Error("Failed to fetch Mass readings");
   }
+
+  return data as any;
 }
 
 /**
@@ -92,22 +88,21 @@ export function cleanHTML(html: string): string {
 export async function saveReadingNote(
   userId: number,
   date: string,
-  notes: string
+  notes: string,
 ): Promise<DailyReadingNote> {
-  const res = await fetch(`${API_BASE_URL}/daily-readings/notes`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const { data, error } = await client.POST("/daily-readings/notes", {
+    body: {
+      userId,
+      date,
+      notes,
     },
-    body: JSON.stringify({ userId, date, notes }),
   });
 
-  if (!res.ok) {
-    const error = await res.json();
+  if (error) {
     throw new Error(error.detail || "Failed to save note");
   }
 
-  return res.json();
+  return data!;
 }
 
 /**
@@ -115,22 +110,29 @@ export async function saveReadingNote(
  */
 export async function getReadingNote(
   userId: number,
-  date: string
+  date: string,
 ): Promise<DailyReadingNote | null> {
-  const res = await fetch(
-    `${API_BASE_URL}/daily-readings/notes/${userId}/${date}`
+  const { data, error, response } = await client.GET(
+    "/daily-readings/notes/{user_id}/{date}",
+    {
+      params: {
+        path: {
+          user_id: userId,
+          date,
+        },
+      },
+    },
   );
 
-  if (res.status === 404) {
+  if (response.status === 404) {
     return null;
   }
 
-  if (!res.ok) {
-    const error = await res.json();
+  if (error) {
     throw new Error(error.detail || "Failed to fetch note");
   }
 
-  return res.json();
+  return data!;
 }
 
 /**
@@ -138,30 +140,39 @@ export async function getReadingNote(
  */
 export async function getAllUserNotes(
   userId: number,
-  limit: number = 30
+  limit: number = 30,
 ): Promise<DailyReadingNote[]> {
-  const res = await fetch(
-    `${API_BASE_URL}/daily-readings/notes/${userId}?limit=${limit}`
-  );
+  const { data, error } = await client.GET("/daily-readings/notes/{user_id}", {
+    params: {
+      path: {
+        user_id: userId,
+      },
+      query: {
+        limit,
+      },
+    },
+  });
 
-  if (!res.ok) {
-    const error = await res.json();
+  if (error) {
     throw new Error(error.detail || "Failed to fetch notes");
   }
 
-  return res.json();
+  return data || [];
 }
 
 /**
  * Delete a daily reading note
  */
 export async function deleteReadingNote(noteId: number): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/daily-readings/notes/${noteId}`, {
-    method: "DELETE",
+  const { error } = await client.DELETE("/daily-readings/notes/{note_id}", {
+    params: {
+      path: {
+        note_id: noteId,
+      },
+    },
   });
 
-  if (!res.ok) {
-    const error = await res.json();
+  if (error) {
     throw new Error(error.detail || "Failed to delete note");
   }
 }

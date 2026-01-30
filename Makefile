@@ -1,4 +1,4 @@
-.PHONY: db-up db-down frontend backend setup-frontend setup-backend setup
+.PHONY: db-up db-down frontend backend setup-frontend setup-backend setup generate-types
 
 # Database
 db-up:
@@ -19,16 +19,20 @@ backend:
 
 # Setup
 setup-frontend:
-	cd frontend && npm install && npx prisma generate
+	cd frontend && npm install
 
 setup-backend:
 	cd api && python3 -m venv venv && venv/Scripts/pip install -r requirements.txt && venv/Scripts/alembic upgrade head
 
 setup: setup-frontend setup-backend
 
-# Database migrations
-db-push:
-	cd frontend && npx prisma db push
+# TypeScript Types Generation
+generate-types:
+	cd frontend && npm run generate:types
 
-db-studio:
-	cd frontend && npx prisma studio
+# Database migrations (backend)
+db-migrate:
+	cd api && venv/Scripts/alembic upgrade head
+
+db-migrate-create:
+	cd api && venv/Scripts/alembic revision --autogenerate -m "$(message)"

@@ -1,18 +1,14 @@
-import type { TrackingType, AsceticismStatus } from "@/lib/prisma/enums";
+import { client } from "@/lib/apiClient";
+import type { TrackingType, AsceticismStatus } from "@/types/enums";
+import type { components } from "@/types/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Export API response types from OpenAPI schema
+export type Asceticism = components["schemas"]["AsceticismResponse"];
+export type AsceticismCreate = components["schemas"]["AsceticismCreate"];
+export type LogEntry = components["schemas"]["LogCreate"];
+export type LogResponse = components["schemas"]["LogResponse"];
 
-// API response types (these are different from Prisma models as they come from the backend)
-export interface Asceticism {
-  id: number;
-  title: string;
-  description?: string;
-  category: string;
-  icon?: string;
-  type: TrackingType;
-  isTemplate: boolean;
-}
-
+// Keep custom interface types for compatibility with existing code
 export interface UserAsceticism {
   id: number;
   userId: number;
@@ -29,14 +25,6 @@ export interface UserAsceticism {
     value?: number;
     notes?: string;
   }>;
-}
-
-export interface LogEntry {
-  userAsceticismId: number;
-  date: string; // ISO
-  completed: boolean;
-  value?: number;
-  notes?: string;
 }
 
 export interface ProgressLog {
@@ -63,12 +51,15 @@ export interface AsceticismProgress {
 }
 
 export async function getAsceticisms(category?: string): Promise<Asceticism[]> {
-  const url = new URL(`${API_URL}/asceticisms/`);
-  if (category) url.searchParams.append("category", category);
+  const { data, error } = await client.GET("/asceticisms/", {
+    params: category ? { query: { category } } : undefined,
+  });
 
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error("Failed to fetch asceticisms");
-  return res.json();
+  if (error) {
+    throw new Error("Failed to fetch asceticisms");
+  }
+
+  return data || [];
 }
 
 export async function getActiveAsceticismIds(
@@ -95,20 +86,22 @@ export async function getUserAsceticisms(
   endDate?: string,
   includeArchived: boolean = true,
 ): Promise<UserAsceticism[]> {
-  const url = new URL(`${API_URL}/asceticisms/my`);
-  url.searchParams.append("userId", userId.toString());
+  const { data, error } = await client.GET("/asceticisms/my", {
+    params: {
+      query: {
+        userId,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        includeArchived,
+      },
+    },
+  });
 
-  if (startDate) {
-    url.searchParams.append("startDate", startDate);
+  if (error) {
+    throw new Error("Failed to fetch user asceticisms");
   }
-  if (endDate) {
-    url.searchParams.append("endDate", endDate);
-  }
-  url.searchParams.append("includeArchived", includeArchived.toString());
 
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error("Failed to fetch user asceticisms");
-  return res.json();
+  return (data as any) || [];
 }
 
 export async function getUserProgress(
@@ -116,31 +109,36 @@ export async function getUserProgress(
   startDate: string,
   endDate: string,
 ): Promise<AsceticismProgress[]> {
-  const url = new URL(`${API_URL}/asceticisms/progress`);
-  url.searchParams.append("userId", userId.toString());
-  url.searchParams.append("startDate", startDate);
-  url.searchParams.append("endDate", endDate);
+  const { data, error } = await client.GET("/asceticisms/progress", {
+    params: {
+      query: {
+        userId,
+        startDate,
+        endDate,
+      },
+    },
+  });
 
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error("Failed to fetch progress data");
-  return res.json();
+  if (error) {
+    throw new Error("Failed to fetch progress data");
+  }
+
+  return (data as any) || [];
 }
 
 export async function createAsceticism(
-  data: Partial<Asceticism> & { creatorId?: number },
+  asceticismData: AsceticismCreate,
 ): Promise<Asceticism> {
-  const res = await fetch(`${API_URL}/asceticisms/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+  const { data, error } = await client.POST("/asceticisms/", {
+    body: asceticismData,
   });
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    const errorMessage =
-      errorData.detail || errorData.message || "Failed to create asceticism";
+
+  if (error) {
+    const errorMessage = error.detail || "Failed to create asceticism";
     throw new Error(errorMessage);
   }
-  return res.json();
+
+  return data!;
 }
 
 export async function joinAsceticism(
@@ -150,84 +148,116 @@ export async function joinAsceticism(
   startDate?: string,
   endDate?: string,
 ): Promise<UserAsceticism> {
-  const res = await fetch(`${API_URL}/asceticisms/join`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const { data, error } = await client.POST("/asceticisms/join", {
+    body: {
       userId,
       asceticismId,
-      targetValue,
-      startDate,
-      endDate,
-    }),
+      targetValue: targetValue || undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+      custom_metadata: undefined,
+    },
   });
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    const errorMessage =
-      errorData.detail || errorData.message || "Failed to join asceticism";
+
+  if (error) {
+    const errorMessage = error.detail || "Failed to join asceticism";
     throw new Error(errorMessage);
   }
-  return res.json();
+
+  return data as any;
 }
 
-export async function logProgress(entry: LogEntry): Promise<any> {
-  const res = await fetch(`${API_URL}/asceticisms/log`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(entry),
+export async function logProgress(entry: LogEntry): Promise<LogResponse> {
+  const { data, error } = await client.POST("/asceticisms/log", {
+    body: entry,
   });
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    const errorMessage =
-      errorData.detail || errorData.message || "Failed to log progress";
+
+  if (error) {
+    const errorMessage = error.detail || "Failed to log progress";
     throw new Error(errorMessage);
   }
-  return res.json();
+
+  return data!;
 }
 
 export async function updateAsceticism(
   id: number,
-  data: Partial<Asceticism> & { creatorId?: number },
+  asceticismData: AsceticismCreate,
 ): Promise<Asceticism> {
-  const res = await fetch(`${API_URL}/asceticisms/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+  const { data, error } = await client.PUT("/asceticisms/{asceticism_id}", {
+    params: {
+      path: {
+        asceticism_id: id,
+      },
+    },
+    body: asceticismData,
   });
-  if (!res.ok) throw new Error("Failed to update asceticism");
-  return res.json();
+
+  if (error) {
+    throw new Error("Failed to update asceticism");
+  }
+
+  return data!;
 }
 
 export async function deleteAsceticism(id: number): Promise<void> {
-  const res = await fetch(`${API_URL}/asceticisms/${id}`, {
-    method: "DELETE",
+  const { error } = await client.DELETE("/asceticisms/{asceticism_id}", {
+    params: {
+      path: {
+        asceticism_id: id,
+      },
+    },
   });
-  if (!res.ok) {
-    const error = await res.json();
+
+  if (error) {
     throw new Error(error.detail || "Failed to delete asceticism");
   }
 }
 
 export async function leaveAsceticism(userAsceticismId: number): Promise<void> {
-  const res = await fetch(`${API_URL}/asceticisms/leave/${userAsceticismId}`, {
-    method: "DELETE",
-  });
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Leave asceticism error:", res.status, errorText);
-    throw new Error(`Failed to leave asceticism: ${errorText}`);
+  const { error } = await client.DELETE(
+    "/asceticisms/leave/{user_asceticism_id}",
+    {
+      params: {
+        path: {
+          user_asceticism_id: userAsceticismId,
+        },
+      },
+    },
+  );
+
+  if (error) {
+    console.error("Leave asceticism error:", error);
+    throw new Error(
+      `Failed to leave asceticism: ${error.detail || "Unknown error"}`,
+    );
   }
 }
 
 export async function updateUserAsceticism(
   userAsceticismId: number,
-  data: { startDate?: string; endDate?: string; targetValue?: number },
+  updateData: {
+    startDate?: string;
+    endDate?: string;
+    targetValue?: number;
+    status?: AsceticismStatus;
+  },
 ): Promise<UserAsceticism> {
-  const res = await fetch(`${API_URL}/asceticisms/my/${userAsceticismId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Failed to update user asceticism");
-  return res.json();
+  const { data, error } = await client.PATCH(
+    "/asceticisms/my/{user_asceticism_id}",
+    {
+      params: {
+        path: {
+          user_asceticism_id: userAsceticismId,
+        },
+      },
+      body: updateData,
+    },
+  );
+
+  if (error) {
+    throw new Error("Failed to update user asceticism");
+  }
+
+  return data as any;
 }

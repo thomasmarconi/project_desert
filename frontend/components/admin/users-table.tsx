@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserRole } from "@/lib/prisma/enums";
+import { UserRole } from "@/types/enums";
 import {
   Table,
   TableBody,

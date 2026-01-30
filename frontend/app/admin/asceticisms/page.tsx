@@ -2,7 +2,7 @@ import { ManageAsceticismsPage } from "@/components/admin/manage-asceticisms";
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ShieldAlert } from "lucide-react";
-import { UserRole } from "@/lib/prisma/enums";
+import { UserRole } from "@/types/enums";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { auth } from "@/auth";
 

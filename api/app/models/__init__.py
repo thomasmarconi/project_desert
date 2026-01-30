@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 from sqlmodel import Field, SQLModel, Relationship, Column, JSON
-from sqlalchemy import BigInteger
+from sqlalchemy import BigInteger, text, Enum as SAEnum, Boolean
 
 
 # --- Enums ---
@@ -102,8 +102,16 @@ class User(SQLModel, table=True):
     email: Optional[str] = Field(default=None, unique=True, max_length=255)
     emailVerified: Optional[datetime] = None
     image: Optional[str] = None
-    role: UserRole = Field(default=UserRole.USER)
-    isBanned: bool = Field(default=False)
+    role: UserRole = Field(
+        default=UserRole.USER,
+        sa_column=Column(
+            SAEnum(UserRole), nullable=False, server_default=text("'USER'")
+        ),
+    )
+    isBanned: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, nullable=False, server_default=text("false")),
+    )
 
     # Relationships
     accounts: list["Account"] = Relationship(back_populates="user")
