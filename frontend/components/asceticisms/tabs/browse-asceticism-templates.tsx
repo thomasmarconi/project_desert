@@ -42,25 +42,35 @@ export default function BrowseAsceticismTemplates() {
     true,
   );
 
+  console.log(userAsceticisms, templates);
+
   const { openJoinDialog, openRemoveDialog } = useAsceticismStore();
   // Create a map of asceticism ID to user asceticism for quick lookup
+  // Prioritize non-archived asceticisms (there can be multiple UserAsceticism records per asceticismId)
   const joinedMap = new Map<number, UserAsceticism>();
   userAsceticisms.forEach((ua) => {
     if (ua.asceticismId) {
-      joinedMap.set(ua.asceticismId, ua);
+      const existing = joinedMap.get(ua.asceticismId);
+      // Only set if: no existing entry, OR existing is archived but new one is not
+      if (
+        !existing ||
+        (existing.status === "ARCHIVED" && ua.status !== "ARCHIVED")
+      ) {
+        joinedMap.set(ua.asceticismId, ua);
+      }
     }
   });
 
   // Separate templates into two groups:
   // - Available: not tracking OR archived (can be reactivated)
-  // - Currently Tracking: active asceticisms only
+  // - Currently Tracking: all non-archived asceticisms (ACTIVE, PAUSED, COMPLETED)
   const availableTemplates = templates.filter((t) => {
     const ua = joinedMap.get(t.id);
     return !ua || ua.status === "ARCHIVED"; // Show if not tracking or archived
   });
   const trackingTemplates = templates.filter((t) => {
     const ua = joinedMap.get(t.id);
-    return ua && ua.status === "ACTIVE"; // Only show ACTIVE in tracking section
+    return ua && ua.status !== "ARCHIVED"; // Show all non-archived user asceticisms
   });
 
   // Helper to convert category to title case
