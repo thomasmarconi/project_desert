@@ -110,6 +110,12 @@ export function PackagesManagementPage() {
   // NOTE: I will wrap it and proceed. I will leave useEffect body mostly but I might need to adjust if I want to be clean.
   // Actually, loadAsceticisms is called there.
 
+  useEffect(() => {
+    if (session?.user?.email) {
+      loadPackages();
+      loadAsceticisms();
+    }
+  }, [session, loadPackages]);
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -276,12 +282,11 @@ export function PackagesManagementPage() {
       await deletePackage(packageToDelete, session.user.email);
       toast.success("Package deleted successfully");
       setDeleteDialogOpen(false);
-      setPackageTo) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete package",
-      
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete package");
+      setPackageToDelete(null);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to delete package";
+      toast.error(message);
       console.error(error);
     }
   };

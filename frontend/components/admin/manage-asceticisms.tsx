@@ -199,7 +199,9 @@ export function ManageAsceticismsPage() {
       resetForm();
       loadAsceticisms();
     } catch (error) {
-      toast.error(error.message || "Failed to save asceticism");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save asceticism",
+      );
       console.error(error);
     }
   };

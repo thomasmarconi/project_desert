@@ -108,7 +108,6 @@ interface CreateAsceticismFormProps {
 }
 
 export default function CreateAsceticismForm({
-  isAdmin: _isAdmin,
   userId,
   disabled = false,
 }: CreateAsceticismFormProps) {

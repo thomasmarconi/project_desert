@@ -12,6 +12,18 @@ export interface ReadingText {
   heading?: string;
 }
 
+// Helper to extract error message from API response
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getErrorMessage(detail: any, defaultMsg: string): string {
+  if (!detail) return defaultMsg;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return detail.map((e: any) => e.msg).join(", ");
+  }
+  return defaultMsg;
+}
+
 export interface MassReading {
   Mass_G?: ReadingText; // Gospel
   Mass_R1?: ReadingText; // First Reading
@@ -22,6 +34,7 @@ export interface MassReading {
   day?: string;
   date?: string;
   number?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -44,7 +57,7 @@ export async function getMassReadings(date: string): Promise<MassReading> {
     throw new Error("Failed to fetch Mass readings");
   }
 
-  return data as any;
+  return data as unknown as MassReading;
 }
 
 /**
@@ -99,7 +112,7 @@ export async function saveReadingNote(
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to save note");
+    throw new Error(getErrorMessage(error.detail, "Failed to save note"));
   }
 
   return data!;
@@ -129,7 +142,7 @@ export async function getReadingNote(
   }
 
   if (error) {
-    throw new Error(error.detail || "Failed to fetch note");
+    throw new Error(getErrorMessage(error.detail, "Failed to fetch note"));
   }
 
   return data!;
@@ -154,7 +167,7 @@ export async function getAllUserNotes(
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to fetch notes");
+    throw new Error(getErrorMessage(error.detail, "Failed to fetch notes"));
   }
 
   return data || [];
@@ -173,6 +186,6 @@ export async function deleteReadingNote(noteId: number): Promise<void> {
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to delete note");
+    throw new Error(getErrorMessage(error.detail, "Failed to delete note"));
   }
 }

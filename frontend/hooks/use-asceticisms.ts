@@ -91,9 +91,9 @@ export function useJoinAsceticism() {
         `Started tracking "${newUserAsceticism.asceticism?.title}"!`,
       );
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error("Failed to join asceticism:", error);
-      toast.error(error.message || "Failed to join.");
+      toast.error(error instanceof Error ? error.message : "Failed to join.");
     },
   });
 }
@@ -116,7 +116,7 @@ export function useLogProgress() {
       value?: number;
       notes?: string;
     }) => logProgress({ userAsceticismId, date, completed, value, notes }),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       // Invalidate all user asceticism queries to refresh the data
       queryClient.invalidateQueries({
         queryKey: [...asceticismKeys.all, "user"],

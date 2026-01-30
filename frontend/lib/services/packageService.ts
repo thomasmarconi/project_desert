@@ -9,6 +9,18 @@ export type PackageItemInput = components["schemas"]["PackageItemInput"];
 export type PackageItemResponse = components["schemas"]["PackageItemResponse"];
 export type AsceticismInfo = components["schemas"]["AsceticismInfo"];
 
+// Helper to extract error message from API response
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getErrorMessage(detail: any, defaultMsg: string): string {
+  if (!detail) return defaultMsg;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return detail.map((e: any) => e.msg).join(", ");
+  }
+  return defaultMsg;
+}
+
 // Admin functions
 export async function createPackage(
   packageData: PackageCreate,
@@ -21,7 +33,7 @@ export async function createPackage(
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to create package");
+    throw new Error(getErrorMessage(error.detail, "Failed to create package"));
   }
 
   return data!;
@@ -35,7 +47,7 @@ export async function getAllPackagesAdmin(
   const { data, error } = await authClient.GET("/packages/admin/all");
 
   if (error) {
-    throw new Error(error.detail || "Failed to fetch packages");
+    throw new Error(getErrorMessage(error.detail, "Failed to fetch packages"));
   }
 
   return data || [];
@@ -58,7 +70,7 @@ export async function updatePackage(
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to update package");
+    throw new Error(getErrorMessage(error.detail, "Failed to update package"));
   }
 
   return data!;
@@ -67,7 +79,7 @@ export async function updatePackage(
 export async function publishPackage(
   packageId: number,
   userEmail: string,
-): Promise<{ success: boolean; isPublished: boolean }> {
+): Promise<PackageResponse> {
   const authClient = createAuthClient(userEmail);
 
   const { data, error } = await authClient.POST(
@@ -82,10 +94,10 @@ export async function publishPackage(
   );
 
   if (error) {
-    throw new Error(error.detail || "Failed to publish package");
+    throw new Error(getErrorMessage(error.detail, "Failed to publish package"));
   }
 
-  return data as any;
+  return data as unknown as PackageResponse;
 }
 
 export async function deletePackage(
@@ -103,7 +115,7 @@ export async function deletePackage(
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to delete package");
+    throw new Error(getErrorMessage(error.detail, "Failed to delete package"));
   }
 
   return { success: true };
@@ -132,7 +144,9 @@ export async function getPackageDetails(
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to fetch package details");
+    throw new Error(
+      getErrorMessage(error.detail, "Failed to fetch package details"),
+    );
   }
 
   return data!;
@@ -162,8 +176,16 @@ export async function addPackageToAccount(
   );
 
   if (error) {
-    throw new Error(error.detail || "Failed to add package to account");
+    throw new Error(
+      getErrorMessage(error.detail, "Failed to add package to account"),
+    );
   }
 
-  return data as any;
+  return data as unknown as {
+    success: boolean;
+    message: string;
+    addedCount: number;
+    skippedCount: number;
+    totalInPackage: number;
+  };
 }

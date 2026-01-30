@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from "react";
 import {
   getUserProgress,
   AsceticismProgress,
-  ProgressLog,
 } from "@/lib/services/asceticismService";
 import { Input } from "@/components/ui/input";
 import {
@@ -170,10 +169,7 @@ export default function ProgressDashboard() {
   }, [filteredProgressData]);
 
   // Render enhanced heatmap with weekly layout and hover tooltips
-  function renderHeatmap(
-    logs: AsceticismProgress["logs"],
-    asceticismTitle: string,
-  ) {
+  function renderHeatmap(logs: AsceticismProgress["logs"]) {
     const { startDate, endDate } = getDateRange(timePeriod);
     const start = startOfDay(new Date(startDate));
     const end = startOfDay(new Date(endDate));
@@ -793,7 +789,7 @@ export default function ProgressDashboard() {
                       Hover for details
                     </Badge>
                   </h4>
-                  {renderHeatmap(progress.logs, progress.asceticism.title)}
+                  {renderHeatmap(progress.logs)}
                 </div>
               </CardContent>
             </Card>

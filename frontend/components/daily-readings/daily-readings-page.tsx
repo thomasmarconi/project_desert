@@ -25,7 +25,6 @@ import {
   getMassReadings,
   formatDateForAPI,
   formatDateISO,
-  cleanHTML,
   saveReadingNote,
   getReadingNote,
   type MassReading,
@@ -44,13 +43,13 @@ const decodeHtmlEntities = (text: string): string => {
   return text
     .replace(/&#x2010;/g, "–")
     .replace(/&#x([0-9A-Fa-f]+);/g, (_, hex) =>
-      String.fromCharCode(parseInt(hex, 16))
+      String.fromCharCode(parseInt(hex, 16)),
     )
     .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
 };
 
 export default function DailyReadingsPage() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const userId = session?.user?.id ? parseInt(session.user.id) : null;
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -168,7 +167,7 @@ export default function DailyReadingsPage() {
                 variant="outline"
                 className={cn(
                   "justify-start text-left font-normal",
-                  !selectedDate && "text-muted-foreground"
+                  !selectedDate && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />

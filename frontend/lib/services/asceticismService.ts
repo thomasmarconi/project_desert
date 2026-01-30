@@ -1,5 +1,5 @@
 import { client } from "@/lib/apiClient";
-import type { TrackingType, AsceticismStatus } from "@/types/enums";
+import type { AsceticismStatus } from "@/types/enums";
 import type { components } from "@/types/api";
 
 // Export API response types from OpenAPI schema
@@ -101,7 +101,7 @@ export async function getUserAsceticisms(
     throw new Error("Failed to fetch user asceticisms");
   }
 
-  return (data as any) || [];
+  return (data as unknown as UserAsceticism[]) || [];
 }
 
 export async function getUserProgress(
@@ -123,7 +123,7 @@ export async function getUserProgress(
     throw new Error("Failed to fetch progress data");
   }
 
-  return (data as any) || [];
+  return (data as unknown as AsceticismProgress[]) || [];
 }
 
 export async function createAsceticism(
@@ -134,7 +134,10 @@ export async function createAsceticism(
   });
 
   if (error) {
-    const errorMessage = error.detail || "Failed to create asceticism";
+    const detail = error.detail;
+    const errorMessage = Array.isArray(detail)
+      ? detail.map((e) => e.msg).join(", ")
+      : (detail as unknown as string) || "Failed to create asceticism";
     throw new Error(errorMessage);
   }
 
@@ -160,11 +163,14 @@ export async function joinAsceticism(
   });
 
   if (error) {
-    const errorMessage = error.detail || "Failed to join asceticism";
+    const detail = error.detail;
+    const errorMessage = Array.isArray(detail)
+      ? detail.map((e) => e.msg).join(", ")
+      : (detail as unknown as string) || "Failed to join asceticism";
     throw new Error(errorMessage);
   }
 
-  return data as any;
+  return data as unknown as UserAsceticism;
 }
 
 export async function logProgress(entry: LogEntry): Promise<LogResponse> {
@@ -173,7 +179,10 @@ export async function logProgress(entry: LogEntry): Promise<LogResponse> {
   });
 
   if (error) {
-    const errorMessage = error.detail || "Failed to log progress";
+    const detail = error.detail;
+    const errorMessage = Array.isArray(detail)
+      ? detail.map((e) => e.msg).join(", ")
+      : (detail as unknown as string) || "Failed to log progress";
     throw new Error(errorMessage);
   }
 
@@ -210,7 +219,11 @@ export async function deleteAsceticism(id: number): Promise<void> {
   });
 
   if (error) {
-    throw new Error(error.detail || "Failed to delete asceticism");
+    const detail = error.detail;
+    const errorMessage = Array.isArray(detail)
+      ? detail.map((e) => e.msg).join(", ")
+      : (detail as unknown as string) || "Failed to delete asceticism";
+    throw new Error(errorMessage);
   }
 }
 
@@ -228,9 +241,11 @@ export async function leaveAsceticism(userAsceticismId: number): Promise<void> {
 
   if (error) {
     console.error("Leave asceticism error:", error);
-    throw new Error(
-      `Failed to leave asceticism: ${error.detail || "Unknown error"}`,
-    );
+    const detail = error.detail;
+    const errorMessage = Array.isArray(detail)
+      ? detail.map((e) => e.msg).join(", ")
+      : (detail as unknown as string) || "Unknown error";
+    throw new Error(`Failed to leave asceticism: ${errorMessage}`);
   }
 }
 
@@ -259,5 +274,5 @@ export async function updateUserAsceticism(
     throw new Error("Failed to update user asceticism");
   }
 
-  return data as any;
+  return data as unknown as UserAsceticism;
 }
