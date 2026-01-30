@@ -289,7 +289,7 @@ async def join_asceticism(link: UserAsceticismLink):
 
         return await db.userasceticism.update(
             where={"id": existing_archived.id},
-            data=update_data,
+            data=update_data,  # type: ignore
             include={"asceticism": True},  # type: ignore
         )
 
