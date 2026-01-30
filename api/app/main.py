@@ -3,30 +3,15 @@
 Configures CORS, database connections, and includes all routers.
 """
 
-from contextlib import asynccontextmanager
-from dotenv import load_dotenv
-
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .db import db
-from .routers import asceticisms, admin, packages, daily_readings
+from app.api.routes import asceticisms, admin, packages, daily_readings
 
-load_dotenv()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Manage database lifecycle during application startup and shutdown.
-
-    Connects to Prisma database on startup and disconnects on shutdown.
-    """
-    await db.connect()
-    yield
-    await db.disconnect()
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="Project Desert API",
+    description="API for managing ascetical practices and spiritual growth",
+    version="2.0.0",
+)
 
 origins = [
     "http://localhost:3000",
@@ -49,5 +34,5 @@ app.include_router(daily_readings.router)
 
 @app.get("/")
 async def root():
-    """Health Message"""
-    return {"message": "Hello Project Desert API!"}
+    """Health check endpoint."""
+    return {"message": "Hello Project Desert API!", "version": "2.0.0"}

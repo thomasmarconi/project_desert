@@ -1,3 +1,7 @@
 fastapi[standard]
-prisma
+sqlmodel
+alembic
+psycopg2-binary
 python-dotenv
+pydantic-settings
+httpx

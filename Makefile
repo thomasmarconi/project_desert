@@ -15,14 +15,14 @@ frontend:
 	cd frontend && npm run dev
 
 backend:
-	cd api && source venv/bin/activate && fastapi dev main.py
+	cd api && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Setup
 setup-frontend:
 	cd frontend && npm install && npx prisma generate
 
 setup-backend:
-	cd api && python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt && prisma generate
+	cd api && python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt && alembic upgrade head
 
 setup: setup-frontend setup-backend
 
