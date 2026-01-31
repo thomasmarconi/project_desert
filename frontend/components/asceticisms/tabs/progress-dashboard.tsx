@@ -86,9 +86,9 @@ export default function ProgressDashboard() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("7d");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { openSignInDialog } = useAsceticismStore((state) => ({
-    openSignInDialog: state.openSignInDialog,
-  }));
+  const openSignInDialog = useAsceticismStore(
+    (state) => state.openSignInDialog,
+  );
 
   useEffect(() => {
     async function fetchProgress() {
