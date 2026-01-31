@@ -16,6 +16,22 @@ def parse_date(date_str: Optional[str]) -> Optional[datetime]:
         return datetime.strptime(date_str, "%Y-%m-%d")
 
 
+class DateRangeValidatorMixin(BaseModel):
+    """Mixin that validates startDate comes before endDate."""
+
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_dates(self):
+        if self.startDate and self.endDate:
+            start = parse_date(self.startDate)
+            end = parse_date(self.endDate)
+            if start and end and end < start:
+                raise ValueError("End date cannot be before start date")
+        return self
+
+
 class AsceticismCreate(BaseModel):
     """Request to create an asceticism."""
 
@@ -46,24 +62,13 @@ class AsceticismResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class UserAsceticismLink(BaseModel):
+class UserAsceticismLink(DateRangeValidatorMixin):
     """Request to link user to asceticism."""
 
     userId: int
     asceticismId: int
     targetValue: Optional[float] = None
-    startDate: Optional[str] = None
-    endDate: Optional[str] = None
     custom_metadata: Optional[dict] = None
-
-    @model_validator(mode="after")
-    def validate_dates(self):
-        if self.startDate and self.endDate:
-            start = parse_date(self.startDate)
-            end = parse_date(self.endDate)
-            if start and end and end < start:
-                raise ValueError("End date cannot be before start date")
-        return self
 
 
 class UserAsceticismResponse(BaseModel):
@@ -84,22 +89,11 @@ class UserAsceticismResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class UserAsceticismUpdate(BaseModel):
+class UserAsceticismUpdate(DateRangeValidatorMixin):
     """Request to update user asceticism."""
 
-    startDate: Optional[str] = None
-    endDate: Optional[str] = None
     targetValue: Optional[float] = None
     status: Optional[AsceticismStatus] = None
-
-    @model_validator(mode="after")
-    def validate_dates(self):
-        if self.startDate and self.endDate:
-            start = parse_date(self.startDate)
-            end = parse_date(self.endDate)
-            if start and end and end < start:
-                raise ValueError("End date cannot be before start date")
-        return self
 
 
 class LogCreate(BaseModel):
