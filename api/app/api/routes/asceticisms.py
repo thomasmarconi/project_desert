@@ -21,9 +21,11 @@ from app.schemas.asceticisms import (
     UserAsceticismLink,
     UserAsceticismResponse,
     UserAsceticismUpdate,
+    UserAsceticismWithDetails,
     LogCreate,
     LogUpdate,
     LogResponse,
+    AsceticismProgressResponse,
 )
 
 router = APIRouter()
@@ -154,7 +156,11 @@ async def delete_asceticism(
     return {"message": "Asceticism deleted successfully"}
 
 
-@router.get("/asceticisms/my", tags=["asceticisms"])
+@router.get(
+    "/asceticisms/my",
+    tags=["asceticisms"],
+    response_model=list[UserAsceticismWithDetails],
+)
 async def list_user_asceticisms(
     user_id: int = Query(..., alias="userId"),
     start_date: Optional[str] = Query(None, alias="startDate"),
@@ -279,7 +285,11 @@ async def list_user_asceticisms(
     return result
 
 
-@router.post("/asceticisms/join", tags=["asceticisms"])
+@router.post(
+    "/asceticisms/join",
+    tags=["asceticisms"],
+    response_model=UserAsceticismWithDetails,
+)
 async def join_asceticism(
     link: UserAsceticismLink,
     current_user: User = Depends(get_current_user),
@@ -487,7 +497,11 @@ async def leave_asceticism(
     return {"message": "Successfully left asceticism"}
 
 
-@router.patch("/asceticisms/my/{user_asceticism_id}", tags=["asceticisms"])
+@router.patch(
+    "/asceticisms/my/{user_asceticism_id}",
+    tags=["asceticisms"],
+    response_model=UserAsceticismWithDetails,
+)
 async def update_user_asceticism(
     user_asceticism_id: int,
     update: UserAsceticismUpdate,
@@ -541,7 +555,11 @@ async def update_user_asceticism(
     }
 
 
-@router.get("/asceticisms/progress", tags=["asceticisms"])
+@router.get(
+    "/asceticisms/progress",
+    tags=["asceticisms"],
+    response_model=list[AsceticismProgressResponse],
+)
 async def get_user_progress(
     user_id: int = Query(..., alias="userId"),
     start_date: str = Query(..., alias="startDate"),

@@ -93,7 +93,7 @@ export const useAsceticismStore = create<AsceticismStore>((set) => ({
   viewingDate: new Date(),
   showArchived: true,
 
-  loading: false,
+  loading: true,
 
   // Actions
   openJoinDialog: (template) =>
@@ -112,7 +112,10 @@ export const useAsceticismStore = create<AsceticismStore>((set) => ({
     set((state) => ({
       joinStartDate: date,
       // Clear end date if it's now before the new start date
-      joinEndDate: state.joinEndDate && date && state.joinEndDate < date ? undefined : state.joinEndDate,
+      joinEndDate:
+        state.joinEndDate && date && state.joinEndDate < date
+          ? undefined
+          : state.joinEndDate,
     })),
   setJoinEndDate: (date) => set({ joinEndDate: date }),
 

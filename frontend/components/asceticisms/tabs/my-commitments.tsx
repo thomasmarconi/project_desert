@@ -75,7 +75,7 @@ export default function MyCommitments({}) {
   // Update loading state when query status changes
   useEffect(() => {
     setLoading(userId !== null && myAsceticismsLoading);
-  }, [userId, myAsceticismsLoading, setLoading]);
+  }, [userId, myAsceticismsLoading]);
 
   // === Log Handlers ===
   function handleLogClick(ua: UserAsceticism) {

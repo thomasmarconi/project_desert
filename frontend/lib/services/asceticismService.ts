@@ -2,53 +2,19 @@ import { client } from "@/lib/apiClient";
 import type { AsceticismStatus } from "@/types/enums";
 import type { components } from "@/types/api";
 
-// Export API response types from OpenAPI schema
+// Export all API types from OpenAPI schema - single source of truth
 export type Asceticism = components["schemas"]["AsceticismResponse"];
 export type AsceticismCreate = components["schemas"]["AsceticismCreate"];
 export type LogEntry = components["schemas"]["LogCreate"];
 export type LogResponse = components["schemas"]["LogResponse"];
-
-// Keep custom interface types for compatibility with existing code
-export interface UserAsceticism {
-  id: number;
-  userId: number;
-  asceticismId: number;
-  asceticism?: Asceticism;
-  status: string;
-  startDate: string;
-  endDate?: string;
-  targetValue?: number;
-  logs?: Array<{
-    id: number;
-    date: string;
-    completed: boolean;
-    value?: number;
-    notes?: string;
-  }>;
-}
-
-export interface ProgressLog {
-  date: string; // ISO
-  completed: boolean;
-  value?: number;
-  notes?: string;
-}
-
-export interface ProgressStats {
-  totalDays: number;
-  completedDays: number;
-  completionRate: number;
-  currentStreak: number;
-  longestStreak: number;
-}
-
-export interface AsceticismProgress {
-  userAsceticismId: number;
-  asceticism: Asceticism;
-  startDate: string;
-  stats: ProgressStats;
-  logs: ProgressLog[];
-}
+export type UserAsceticismLink = components["schemas"]["UserAsceticismLink"];
+export type UserAsceticismUpdate =
+  components["schemas"]["UserAsceticismUpdate"];
+export type UserAsceticism = components["schemas"]["UserAsceticismWithDetails"];
+export type ProgressLog = components["schemas"]["ProgressLog"];
+export type ProgressStats = components["schemas"]["ProgressStats"];
+export type AsceticismProgress =
+  components["schemas"]["AsceticismProgressResponse"];
 
 export async function getAsceticisms(category?: string): Promise<Asceticism[]> {
   const { data, error } = await client.GET("/asceticisms/", {
@@ -101,7 +67,7 @@ export async function getUserAsceticisms(
     throw new Error("Failed to fetch user asceticisms");
   }
 
-  return (data as unknown as UserAsceticism[]) || [];
+  return data || [];
 }
 
 export async function getUserProgress(
@@ -123,7 +89,7 @@ export async function getUserProgress(
     throw new Error("Failed to fetch progress data");
   }
 
-  return (data as unknown as AsceticismProgress[]) || [];
+  return data || [];
 }
 
 export async function createAsceticism(
@@ -170,7 +136,7 @@ export async function joinAsceticism(
     throw new Error(errorMessage);
   }
 
-  return data as unknown as UserAsceticism;
+  return data!;
 }
 
 export async function logProgress(entry: LogEntry): Promise<LogResponse> {
@@ -274,5 +240,5 @@ export async function updateUserAsceticism(
     throw new Error("Failed to update user asceticism");
   }
 
-  return data as unknown as UserAsceticism;
+  return data!;
 }
