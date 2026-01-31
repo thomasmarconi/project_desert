@@ -731,6 +731,26 @@ export interface components {
             updatedAt: string;
         };
         /**
+         * MassReadingResponse
+         * @description Mass readings response from Universalis API.
+         */
+        MassReadingResponse: {
+            Mass_G?: components["schemas"]["ReadingText"] | null;
+            Mass_R1?: components["schemas"]["ReadingText"] | null;
+            Mass_R2?: components["schemas"]["ReadingText"] | null;
+            Mass_Ps?: components["schemas"]["ReadingText"] | null;
+            Mass_GA?: components["schemas"]["ReadingText"] | null;
+            copyright?: components["schemas"]["ReadingText"] | null;
+            /** Day */
+            day?: string | null;
+            /** Date */
+            date?: string | null;
+            /** Number */
+            number?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
          * PackageCreate
          * @description Request to create a package.
          */
@@ -855,6 +875,18 @@ export interface components {
             currentStreak: number;
             /** Longeststreak */
             longestStreak: number;
+        };
+        /**
+         * ReadingText
+         * @description Text content of a liturgical reading.
+         */
+        ReadingText: {
+            /** Text */
+            text: string;
+            /** Source */
+            source?: string | null;
+            /** Heading */
+            heading?: string | null;
         };
         /**
          * ToggleBanRequest
@@ -1739,7 +1771,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MassReadingResponse"];
                 };
             };
             /** @description Validation Error */

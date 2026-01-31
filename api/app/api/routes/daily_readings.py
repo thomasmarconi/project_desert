@@ -14,12 +14,13 @@ from app.schemas.daily_readings import (
     DailyReadingNoteCreate,
     DailyReadingNoteUpdate,
     DailyReadingNoteResponse,
+    MassReadingResponse,
 )
 
 router = APIRouter(prefix="/daily-readings", tags=["daily-readings"])
 
 
-@router.get("/readings/{date}")
+@router.get("/readings/{date}", response_model=MassReadingResponse)
 async def get_mass_readings(date: str, session: Session = Depends(get_session)):
     """
     Get Mass readings for a specific date. Checks database cache first,
