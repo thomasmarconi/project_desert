@@ -16,12 +16,6 @@ from app.schemas.admin import (
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-async def get_user_by_email(email: str, session: Session) -> Optional[User]:
-    """Get user by email."""
-    statement = select(User).where(User.email == email)
-    return session.exec(statement).first()
-
-
 @router.get("/users", response_model=list[UserResponse])
 async def get_all_users(
     current_user: User = Depends(require_admin),

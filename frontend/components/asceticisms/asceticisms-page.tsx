@@ -16,9 +16,7 @@ export default function AsceticismsPage() {
   const userId = session?.user?.id;
 
   // Zustand store
-  const { loading } = useAsceticismStore((state) => ({
-    loading: state.loading,
-  }));
+  const loading = useAsceticismStore((state) => state.loading);
 
   if (loading && userId) {
     return (

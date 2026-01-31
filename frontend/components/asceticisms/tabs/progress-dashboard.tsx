@@ -92,7 +92,10 @@ export default function ProgressDashboard() {
 
   useEffect(() => {
     async function fetchProgress() {
-      if (!userId) return;
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       try {
@@ -107,9 +110,7 @@ export default function ProgressDashboard() {
       }
     }
 
-    if (userId) {
-      fetchProgress();
-    }
+    fetchProgress();
   }, [timePeriod, userId]);
 
   function getDateRange(period: TimePeriod): {

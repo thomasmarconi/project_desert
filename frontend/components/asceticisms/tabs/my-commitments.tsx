@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAsceticismStore } from "@/lib/stores/asceticismStore";
 import { useLogProgress, useUserAsceticisms } from "@/hooks/use-asceticisms";
 import { Button } from "@/components/ui/button";
@@ -38,37 +38,29 @@ import {
   FileText,
 } from "lucide-react";
 import { UserAsceticism } from "@/lib/services/asceticismService";
-import { auth } from "@/auth";
 import ViewNotesDialog from "@/components/asceticisms/dialogs/view-notes-dialog";
 import LogProgressDialog from "@/components/asceticisms/dialogs/log-progress-dialog";
 import RemoveAsceticismDialog from "@/components/asceticisms/dialogs/remove-asceticism-dialog";
+import { useSession } from "next-auth/react";
 
-export default async function MyCommitments({}) {
-  const session = await auth();
+export default function MyCommitments({}) {
+  const { data: session } = useSession();
   const userId = session?.user?.id;
 
   // Zustand store
-  const {
-    viewingDate,
-    setLoading,
-    openSignInDialog,
-    setViewingDate,
-    showArchived,
-    setShowArchived,
-    openNotesDialog,
-    openRemoveDialog,
-    openLogDialog,
-  } = useAsceticismStore((state) => ({
-    viewingDate: state.viewingDate,
-    setLoading: state.setLoading,
-    openSignInDialog: state.openSignInDialog,
-    setViewingDate: state.setViewingDate,
-    showArchived: state.showArchived,
-    setShowArchived: state.setShowArchived,
-    openNotesDialog: state.openNotesDialog,
-    openRemoveDialog: state.openRemoveDialog,
-    openLogDialog: state.openLogDialog,
-  }));
+  const viewingDate = useAsceticismStore((state) => state.viewingDate);
+  const setLoading = useAsceticismStore((state) => state.setLoading);
+  const openSignInDialog = useAsceticismStore(
+    (state) => state.openSignInDialog,
+  );
+  const setViewingDate = useAsceticismStore((state) => state.setViewingDate);
+  const showArchived = useAsceticismStore((state) => state.showArchived);
+  const setShowArchived = useAsceticismStore((state) => state.setShowArchived);
+  const openNotesDialog = useAsceticismStore((state) => state.openNotesDialog);
+  const openRemoveDialog = useAsceticismStore(
+    (state) => state.openRemoveDialog,
+  );
+  const openLogDialog = useAsceticismStore((state) => state.openLogDialog);
 
   // TanStack Query hooks
   const dateStr = viewingDate.toISOString().split("T")[0];
@@ -76,11 +68,14 @@ export default async function MyCommitments({}) {
   const { data: myAsceticisms = [], isLoading: myAsceticismsLoading } =
     useUserAsceticisms(userId, dateStr, dateStr, showArchived);
 
-  setLoading(userId !== null && myAsceticismsLoading);
-
   const [completingAll, setCompletingAll] = useState(false);
 
   const logMutation = useLogProgress();
+
+  // Update loading state when query status changes
+  useEffect(() => {
+    setLoading(userId !== null && myAsceticismsLoading);
+  }, [userId, myAsceticismsLoading, setLoading]);
 
   // === Log Handlers ===
   function handleLogClick(ua: UserAsceticism) {
