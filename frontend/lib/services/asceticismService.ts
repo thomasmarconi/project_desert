@@ -1,4 +1,4 @@
-import { client } from "@/lib/apiClient";
+import { getApiClient } from "@/lib/apiClient";
 import type { AsceticismStatus } from "@/types/enums";
 import type { components } from "@/types/api";
 
@@ -17,6 +17,7 @@ export type AsceticismProgress =
   components["schemas"]["AsceticismProgressResponse"];
 
 export async function getAsceticisms(category?: string): Promise<Asceticism[]> {
+  const client = await getApiClient();
   const { data, error } = await client.GET("/asceticisms/", {
     params: category ? { query: { category } } : undefined,
   });
@@ -52,6 +53,7 @@ export async function getUserAsceticisms(
   endDate?: string,
   includeArchived: boolean = true,
 ): Promise<UserAsceticism[]> {
+  const client = await getApiClient();
   const { data, error } = await client.GET("/asceticisms/my", {
     params: {
       query: {
@@ -75,6 +77,7 @@ export async function getUserProgress(
   startDate: string,
   endDate: string,
 ): Promise<AsceticismProgress[]> {
+  const client = await getApiClient();
   const { data, error } = await client.GET("/asceticisms/progress", {
     params: {
       query: {
@@ -95,6 +98,7 @@ export async function getUserProgress(
 export async function createAsceticism(
   asceticismData: AsceticismCreate,
 ): Promise<Asceticism> {
+  const client = await getApiClient();
   const { data, error } = await client.POST("/asceticisms/", {
     body: asceticismData,
   });
@@ -117,6 +121,7 @@ export async function joinAsceticism(
   startDate?: string,
   endDate?: string,
 ): Promise<UserAsceticism> {
+  const client = await getApiClient();
   const { data, error } = await client.POST("/asceticisms/join", {
     body: {
       userId,
@@ -140,6 +145,7 @@ export async function joinAsceticism(
 }
 
 export async function logProgress(entry: LogEntry): Promise<LogResponse> {
+  const client = await getApiClient();
   const { data, error } = await client.POST("/asceticisms/log", {
     body: entry,
   });
@@ -159,6 +165,7 @@ export async function updateAsceticism(
   id: number,
   asceticismData: AsceticismCreate,
 ): Promise<Asceticism> {
+  const client = await getApiClient();
   const { data, error } = await client.PUT("/asceticisms/{asceticism_id}", {
     params: {
       path: {
@@ -176,6 +183,7 @@ export async function updateAsceticism(
 }
 
 export async function deleteAsceticism(id: number): Promise<void> {
+  const client = await getApiClient();
   const { error } = await client.DELETE("/asceticisms/{asceticism_id}", {
     params: {
       path: {
@@ -194,6 +202,7 @@ export async function deleteAsceticism(id: number): Promise<void> {
 }
 
 export async function leaveAsceticism(userAsceticismId: number): Promise<void> {
+  const client = await getApiClient();
   const { error } = await client.DELETE(
     "/asceticisms/leave/{user_asceticism_id}",
     {
@@ -224,6 +233,7 @@ export async function updateUserAsceticism(
     status?: AsceticismStatus;
   },
 ): Promise<UserAsceticism> {
+  const client = await getApiClient();
   const { data, error } = await client.PATCH(
     "/asceticisms/my/{user_asceticism_id}",
     {

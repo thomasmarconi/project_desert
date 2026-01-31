@@ -11,63 +11,80 @@ import type { paths } from "@/types/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
- * Create a typed API client instance.
- * This client provides methods for all API endpoints with full type safety.
+ * Get the JWT token for API authentication.
+ * This creates a JWT token with the session data that the backend can verify.
  *
- * Example usage:
- * ```typescript
- * const { data, error } = await client.GET("/asceticisms/");
- * ```
+ * @param userEmail - Optional user email for server-side validation
+ * @returns The JWT token or null if not authenticated
  */
-export const client = createClient<paths>({ baseUrl: API_URL });
-
-/**
- * Get the session token for API authentication.
- * This retrieves the JWT token from NextAuth cookies.
- *
- * @returns The session token or null if not authenticated
- */
-async function getSessionToken(): Promise<string | null> {
+async function getJWTToken(userEmail?: string): Promise<string | null> {
   if (typeof window === "undefined") {
-    // Server-side: Use next-auth to get token
+    // Server-side: Get session and create a JWT token for the backend
     const { auth } = await import("@/auth");
+    const jwt = await import("jsonwebtoken");
+
     const session = await auth();
+    console.log("Session:", session ? "exists" : "null", session?.user?.email);
 
-    if (!session) return null;
+    if (!session || !session.user) {
+      console.log("No session found - user not authenticated");
+      return null;
+    }
 
-    // Get the token from the session
-    // NextAuth stores tokens in the session object
-    return (session as any).token?.sub || null;
-  } else {
-    // Client-side: Get token from cookie
-    const cookies = document.cookie.split(";");
-    const sessionCookie = cookies.find(
-      (c) =>
-        c.trim().startsWith("next-auth.session-token=") ||
-        c.trim().startsWith("__Secure-next-auth.session-token="),
+    // Verify the user if email is provided
+    if (userEmail && session.user.email !== userEmail) {
+      console.log("User email mismatch");
+      return null;
+    }
+
+    // Get the NEXTAUTH_SECRET from environment
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (!secret) {
+      console.error("NEXTAUTH_SECRET is not set");
+      return null;
+    }
+
+    // Create a JWT token that the backend can verify with the same secret
+    // The backend expects a token with at least the email field
+    const token = jwt.sign(
+      {
+        email: session.user.email,
+        id: session.user.id,
+        role: session.user.role,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+      },
+      secret,
+      { algorithm: "HS256" },
     );
 
-    if (!sessionCookie) return null;
-
-    const token = sessionCookie.split("=")[1];
-    return token || null;
+    console.log("JWT token created successfully for", session.user.email);
+    return token;
+  } else {
+    // Client-side: This should not be called directly from client components
+    // Use server actions instead
+    console.warn("JWT token retrieval should be done server-side");
+    return null;
   }
 }
 
 /**
  * Create an authenticated API client with JWT Bearer token.
- * Use this for endpoints that require authentication.
+ * This is the primary client - use it for all API requests.
+ * It will automatically include auth headers when a session exists.
+ * Endpoints that don't require auth will simply ignore the header.
  *
- * @returns A configured API client with authentication headers
+ * @param userEmail - Optional user email for server-side validation
+ * @returns A configured API client with authentication headers when available
  *
  * Example usage:
  * ```typescript
- * const authClient = await createAuthClient();
- * const { data, error } = await authClient.GET("/admin/users");
+ * const client = await getApiClient();
+ * const { data, error } = await client.GET("/asceticisms/");
  * ```
  */
-export async function createAuthClient() {
-  const token = await getSessionToken();
+export async function getApiClient(userEmail?: string) {
+  const token = await getJWTToken(userEmail);
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -75,6 +92,9 @@ export async function createAuthClient() {
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
+    console.log("Authorization header added to API client");
+  } else {
+    console.log("No token available - API client will be unauthenticated");
   }
 
   return createClient<paths>({
@@ -84,6 +104,18 @@ export async function createAuthClient() {
 }
 
 /**
- * Default export for convenience
+ * Legacy alias for getApiClient - prefer using getApiClient
+ * @deprecated Use getApiClient instead
  */
-export default client;
+export const createAuthClient = getApiClient;
+
+/**
+ * Unauthenticated client for public endpoints only.
+ * For most use cases, use getApiClient() instead which handles both auth and non-auth endpoints.
+ */
+export const client = createClient<paths>({ baseUrl: API_URL });
+
+/**
+ * Default export - use getApiClient() for authenticated requests
+ */
+export default getApiClient;

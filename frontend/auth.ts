@@ -81,8 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: token.role as string,
           isBanned: token.isBanned as boolean,
         },
-        token: token.sub, // Include the JWT token in session
-      };
+      } as typeof session;
     },
   },
 });

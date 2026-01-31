@@ -1,4 +1,4 @@
-import { client } from "@/lib/apiClient";
+import { getApiClient } from "@/lib/apiClient";
 import type { components } from "@/types/api";
 
 // Export all API types from OpenAPI schema - single source of truth
@@ -25,6 +25,7 @@ function getErrorMessage(detail: any, defaultMsg: string): string {
  * @returns MassReading object
  */
 export async function getMassReadings(date: string): Promise<MassReading> {
+  const client = await getApiClient();
   const { data, error } = await client.GET("/daily-readings/readings/{date}", {
     params: {
       path: {
@@ -84,6 +85,7 @@ export async function saveReadingNote(
   date: string,
   notes: string,
 ): Promise<DailyReadingNote> {
+  const client = await getApiClient();
   const { data, error } = await client.POST("/daily-readings/notes", {
     body: {
       userId,
@@ -106,6 +108,7 @@ export async function getReadingNote(
   userId: number,
   date: string,
 ): Promise<DailyReadingNote | null> {
+  const client = await getApiClient();
   const { data, error, response } = await client.GET(
     "/daily-readings/notes/{user_id}/{date}",
     {
@@ -136,6 +139,7 @@ export async function getAllUserNotes(
   userId: number,
   limit: number = 30,
 ): Promise<DailyReadingNote[]> {
+  const client = await getApiClient();
   const { data, error } = await client.GET("/daily-readings/notes/{user_id}", {
     params: {
       path: {
@@ -158,6 +162,7 @@ export async function getAllUserNotes(
  * Delete a daily reading note
  */
 export async function deleteReadingNote(noteId: number): Promise<void> {
+  const client = await getApiClient();
   const { error } = await client.DELETE("/daily-readings/notes/{note_id}", {
     params: {
       path: {
