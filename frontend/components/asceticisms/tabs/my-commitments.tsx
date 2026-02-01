@@ -473,7 +473,6 @@ export default function MyCommitments({}) {
       </div>
       <ViewNotesDialog getLogForDate={getLogForDate} onEdit={handleLogClick} />
       <LogProgressDialog />
-      <RemoveAsceticismDialog />
     </>
   );
 }
